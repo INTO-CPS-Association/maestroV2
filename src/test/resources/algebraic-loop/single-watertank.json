@@ -1,0 +1,16 @@
+{
+  "fmus":{
+    "{control}":"watertankcontroller-c.fmu",
+    "{tank}":"singlewatertank-20sim.fmu"
+  },
+  "connections":{
+    "{control}.c.valve":[
+      "{tank}.t.valvecontrol"
+    ],
+    "{tank}.t.level":[
+      "{control}.c.level"
+    ]
+  },
+  "parameters":{
+  }
+}
