@@ -73,6 +73,8 @@ object HelloWorld {
   }
 
 
+
+
   // All instances has been found and enriched with their respective FMU
   def contAfterEnrichedInstances(extConnections: Set[Connection], instances: Set[InstanceFMUWithMD]): Unit = {
     val connections: Set[Connection] = Connections.calculateConnections(extConnections, instances)
@@ -87,11 +89,14 @@ object HelloWorld {
     }
 
     val groupByFMU: Set[(FMUWithMD, Set[String])] = instances.groupBy(x => x.fmu).map { case (f, sI) => (f, sI.map(x => x.name)) }.toSet
+    // groupByFMUNamed is a set with tuples. Each tuple is (fmuName, Set of Instances of the fmu by Name)
     val groupedByFMUNamed: Set[(String, Set[String])] = groupByFMU.map { case (f, sI) => (f.key, sI) }
 
-    val instantiateCommands = calcInstantiate(groupedByFMUNamed)
-    val setupExperimentCommands = calcSetupExperiment(groupedByFMUNamed)
-    val setIniCommands = calcSetINI(groupByFMU)
+    val instantiateCommands: MaestroV2Command = calcInstantiate(groupedByFMUNamed)
+    val setupExperimentCommands : MaestroV2Command= calcSetupExperiment(groupedByFMUNamed)
+    val setIniCommands : MaestroV2Command = calcSetINI(groupByFMU)
+    val enterInitCommands : MaestroV2Command = calcEnterInitializationMode(groupedByFMUNamed);
+
 
 
 
@@ -142,5 +147,9 @@ object HelloWorld {
     }
 
     MaestroV2Set(x);
+  }
+
+  def calcEnterInitializationMode(groupedByFMUNamed: Set[(String, Set[String])]): MaestroV2Command = {
+    MaestroV2Set(groupedByFMUNamed.map { case (a, b) => EnterInitializationModeCMD(a, b) })
   }
 }

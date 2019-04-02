@@ -10,3 +10,6 @@ sealed trait FMICommand extends Command
 case class InstantiateCMD(fmu: String, instances: Set[String]) extends FMICommand
 case class SetupExperimentCMD(fmu: String, instances: Set[String] ) extends FMICommand
 case class SetIniCMD(fmu: String, instances: Set[String], scalarVariables: List[Long]) extends FMICommand
+case class EnterInitializationModeCMD(fmu: String, instances: Set[String]) extends FMICommand
+case class SetCMD(fmu: String, instance: String, scalarVariables: List[Long]) extends FMICommand
+case class GetCMD(fmu: String, instance: String, scalarVariables: List[Long]) extends FMICommand
