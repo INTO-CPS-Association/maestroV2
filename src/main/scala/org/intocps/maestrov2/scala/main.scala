@@ -92,10 +92,10 @@ object HelloWorld {
     // groupByFMUNamed is a set with tuples. Each tuple is (fmuName, Set of Instances of the fmu by Name)
     val groupedByFMUNamed: Set[(String, Set[String])] = groupByFMU.map { case (f, sI) => (f.key, sI) }
 
-    val instantiateCommands: MaestroV2Command = calcInstantiate(groupedByFMUNamed)
-    val setupExperimentCommands : MaestroV2Command= calcSetupExperiment(groupedByFMUNamed)
-    val setIniCommands : MaestroV2Command = calcSetINI(groupByFMU)
-    val enterInitCommands : MaestroV2Command = calcEnterInitializationMode(groupedByFMUNamed)
+    val instantiateCommands : MaestroV2Command = CommandComputer.instanceCommands(groupedByFMUNamed, (a, b) => InstantiateCMD(a,b));
+    val setupExperimentCommands : MaestroV2Command = CommandComputer.instanceCommands(groupedByFMUNamed, (a, b) => SetupExperimentCMD(a,b));
+    val setIniCommands : MaestroV2Command = CommandComputer.calcSetINI(groupByFMU)
+    val enterInitCommands : MaestroV2Command = CommandComputer.instanceCommands(groupedByFMUNamed, (a, b) => EnterInitializationModeCMD(a,b));
 
 
 
@@ -121,35 +121,5 @@ object HelloWorld {
     }
   }
 
-  def calcInstantiate(fmusToInstances: Set[(String, Set[String])]): MaestroV2Command = {
-    // TODO: Can an FMU handle concurrent instantiation?
-    val b: Set[Command] = fmusToInstances.map { case (a, b) => InstantiateCMD(a, b) };
-    MaestroV2Set(b);
-  }
 
-  def calcSetupExperiment(fmusToInstances: Set[(String, Set[String])]): MaestroV2Command = {
-    MaestroV2Set(fmusToInstances.map { case (a, b) => SetupExperimentCMD(a, b) })
-  }
-
-  /*
-   INI is one of: Real, Integer, Boolean, String for a variable with
-   variability != constant
-   initial == "exact" || "approx"
-    */
-  def calcSetINI(groupByFMU: Set[(FMUWithMD, Set[String])]): MaestroV2Command = {
-    val x: Set[Command] = groupByFMU.map { case (fmu, setInstances) =>
-      val svs: List[Long] = fmu.modelDescription.getScalarVariables.asScala.toList.filter(s =>
-        s.variability != Variability.Constant
-          && (s.initial == Initial.Exact || s.initial == Initial.Approx)
-          && (s.`type`.`type` != Types.Enumeration)
-      ).map(x => x.valueReference)
-      SetIniCMD(fmu.key, setInstances, svs)
-    }
-
-    MaestroV2Set(x);
-  }
-
-  def calcEnterInitializationMode(groupedByFMUNamed: Set[(String, Set[String])]): MaestroV2Command = {
-    MaestroV2Set(groupedByFMUNamed.map { case (a, b) => EnterInitializationModeCMD(a, b) })
-  }
 }
