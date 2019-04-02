@@ -7,7 +7,7 @@ import org.intocps.fmi.IFmu
 import org.intocps.fmi.jnifmuapi.{Factory, FmuModelDescription}
 import org.intocps.maestrov2.scala.commands._
 import org.intocps.maestrov2.scala.configuration.{ConfigurationHandler, Conversions}
-import org.intocps.maestrov2.scala.configuration.datatypes.MultiModelConfiguration
+import org.intocps.maestrov2.scala.configuration.datatypes.{MultiModelConfiguration, ParameterValue}
 import org.intocps.maestrov2.scala.exceptions.AlgebraicLoopException
 import org.intocps.maestrov2.scala.modeldescription._
 import org.intocps.orchestration.coe.modeldefinition.ModelDescription
@@ -69,14 +69,14 @@ object HelloWorld {
           }
         }))
 
-    enrichedInstances.map(x => contAfterEnrichedInstances(externalConnections, x))
+    enrichedInstances.map(x => contAfterEnrichedInstances(externalConnections, x, mmc.parameters))
   }
 
 
 
 
   // All instances has been found and enriched with their respective FMU
-  def contAfterEnrichedInstances(extConnections: Set[Connection], instances: Set[InstanceFMUWithMD]): Unit = {
+  def contAfterEnrichedInstances(extConnections: Set[Connection], instances: Set[InstanceFMUWithMD], parameters: Map[String, ParameterValue]): Unit = {
     val connections: Set[Connection] = Connections.calculateConnections(extConnections, instances)
 
     // At this stage, connections contain all connections, both internal and external.
@@ -95,7 +95,7 @@ object HelloWorld {
     val instantiateCommands: MaestroV2Command = calcInstantiate(groupedByFMUNamed)
     val setupExperimentCommands : MaestroV2Command= calcSetupExperiment(groupedByFMUNamed)
     val setIniCommands : MaestroV2Command = calcSetINI(groupByFMU)
-    val enterInitCommands : MaestroV2Command = calcEnterInitializationMode(groupedByFMUNamed);
+    val enterInitCommands : MaestroV2Command = calcEnterInitializationMode(groupedByFMUNamed)
 
 
 
