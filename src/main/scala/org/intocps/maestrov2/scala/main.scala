@@ -68,15 +68,15 @@ object HelloWorld {
             case None => None
           }
         }))
-
-    enrichedInstances.map(x => contAfterEnrichedInstances(externalConnections, x, mmc.parameters))
+    val parameters_ = mmc.parameters.map{case (s,v) => (Conversions.configVarToConnectionSV(s),v)};
+    enrichedInstances.map(x => contAfterEnrichedInstances(externalConnections, x, parameters_))
   }
 
 
 
 
   // All instances has been found and enriched with their respective FMU
-  def contAfterEnrichedInstances(extConnections: Set[Connection], instances: Set[InstanceFMUWithMD], parameters: Map[String, ParameterValue]): Unit = {
+  def contAfterEnrichedInstances(extConnections: Set[Connection], instances: Set[InstanceFMUWithMD], parameters: Map[ConnectionScalarVariable, ParameterValue]): Unit = {
     val connections: Set[Connection] = Connections.calculateConnections(extConnections, instances)
 
     // At this stage, connections contain all connections, both internal and external.
