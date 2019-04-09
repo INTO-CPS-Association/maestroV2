@@ -43,7 +43,7 @@ object HelloWorld {
     fmuEntities.map(entities => contAfterFMUEntsCreated(mmc, entities));
   }
 
-  // The FMUs has been unpacked
+  // The FMUs have been unpacked
   def contAfterFMUEntsCreated(mmc: MultiModelConfiguration, fmuEntities: Map[String, IFmu]) = {
     // External connections are connections between instances of FMUs.
     // These originate from the multi model.
@@ -96,17 +96,14 @@ object HelloWorld {
     val setupExperimentCommands : MaestroV2Command = CommandComputer.instanceCommands(groupedByFMUNamed, (a, b) => SetupExperimentCMD(a,b));
     val setIniCommands : MaestroV2Command = CommandComputer.calcSetINI(groupByFMU)
     val enterInitCommands : MaestroV2Command = CommandComputer.instanceCommands(groupedByFMUNamed, (a, b) => EnterInitializationModeCMD(a,b));
+    val exitInitCommands : MaestroV2Command = CommandComputer.instanceCommands(groupedByFMUNamed, (a,b) => ExitInitializationModeCMD(a,b));
 
 
 
 
 
-    //If topological sorting suceeded then we expect the co-simulation can be carried out.
 
-    // TODO: Instantiate the FMUs using FMI2Instantiate (Should return an instantiate command with all relevant data)
-    // TODO: Invoke FMI2SetupExperiment for the FMU instances (Should return a setup experiment command with all relevant data)
-    // TODO: Set scalar variables with: <ScalarVariable initial = "exact" or "approx"> (p. 22)
-    // TODO: Invoke FMI2EnterInitializationMode for the FMU Instances
+
 
   }
 
