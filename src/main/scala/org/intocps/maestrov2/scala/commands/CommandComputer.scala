@@ -11,7 +11,7 @@ object CommandComputer {
   Calculates commands only using fmu and instance names
    */
 def instanceCommands(fmusToInstances: Set[(String, Set[String])], fmiF: (String, Set[String]) => FMICommand) :MaestroV2Set = {
-  MaestroV2Set(fmusToInstances.map(x => fmiF(x)))
+  MaestroV2Set(fmusToInstances.map{case (k,v) => fmiF(k,v)})
 }
 
   /*

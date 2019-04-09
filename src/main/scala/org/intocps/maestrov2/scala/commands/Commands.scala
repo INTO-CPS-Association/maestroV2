@@ -12,5 +12,6 @@ case class SetupExperimentCMD(fmu: String, instances: Set[String] ) extends FMIC
 case class SetIniCMD(fmu: String, instances: Set[String], scalarVariables: List[Long]) extends FMICommand
 case class EnterInitializationModeCMD(fmu: String, instances: Set[String]) extends FMICommand
 case class ExitInitializationModeCMD(fmu: String, instances: Set[String]) extends FMICommand
-case class SetCMD(fmu: String, instance: String, scalarVariables: List[Long]) extends FMICommand
-case class GetCMD(fmu: String, instance: String, scalarVariables: List[Long]) extends FMICommand
+case class SetCMD(fmu: String, instance: String, scalarVariables: Set[Long]) extends FMICommand
+case class GetCMD(fmu: String, instance: String, scalarVariables: Set[Long]) extends FMICommand
+case class DoStepCMD(fmu: String, instance: String) extends FMICommand
