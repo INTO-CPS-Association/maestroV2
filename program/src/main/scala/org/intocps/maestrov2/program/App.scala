@@ -16,8 +16,7 @@ import org.intocps.orchestration.coe.modeldefinition.ModelDescription
  */
 object App {
   
-  def foo(x : Array[String]) = x.foldLeft("")((a,b) => a + b)
-  
+
   def main(args : Array[String]) {
     if (args.length == 1) {
       val mmc: Either[String, MultiModelConfiguration] = ConfigurationHandler.loadMMCFromFile(new File(args(0)));
@@ -107,7 +106,7 @@ object App {
     try {
       Some(fmus.map { case (k, v) => (k, Factory.create(new File(v))) });
     } catch {
-      case _ => None
+      case _ : Throwable => None
     }
   }
 
