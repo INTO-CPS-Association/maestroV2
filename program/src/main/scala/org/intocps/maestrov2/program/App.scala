@@ -7,7 +7,7 @@ import org.intocps.fmi.jnifmuapi.Factory
 import org.intocps.maestrov2.data._
 import org.intocps.maestrov2.program.commands._
 import org.intocps.maestrov2.program.exceptions.AlgebraicLoopException
-import org.intocps.maestrov2.program.plugins.{IODependencyCalculator, InitialisationCommandComputer}
+import org.intocps.maestrov2.program.plugins.{IODependencyCalculator, InitialisationCommandsComputer}
 import org.intocps.orchestration.coe.modeldefinition.ModelDescription
 
 
@@ -95,7 +95,7 @@ object App {
     val setupExperimentCommands : MaestroV2Command = CommandComputer.instanceCommands(groupedByFMUNamed, (a, b) => SetupExperimentCMD(a,b));
     val setIniCommands : MaestroV2Command = InstantiatedCommandsComputer.calcSetINI(groupByFMU)
     val enterInitCommands : MaestroV2Command = CommandComputer.instanceCommands(groupedByFMUNamed, (a, b) => EnterInitializationModeCMD(a,b));
-    val initializationScalarCommand : MaestroV2Command = InitialisationCommandComputer.calcInitializationScalarCommand(connections,groupByFMU)
+    val initializationScalarCommand : MaestroV2Command = InitialisationCommandsComputer.calcInitializationScalarCommand(connections,groupByFMU)
     val exitInitCommands : MaestroV2Command = CommandComputer.instanceCommands(groupedByFMUNamed, (a,b) => ExitInitializationModeCMD(a,b));
 
   }

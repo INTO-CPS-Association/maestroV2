@@ -2,13 +2,13 @@ import java.io.File
 
 import org.intocps.maestrov2.data._
 import org.intocps.maestrov2.program.commands.{Command, MaestroV2Command}
-import org.intocps.maestrov2.program.plugins.InitialisationCommandComputer
+import org.intocps.maestrov2.program.plugins.InitialisationCommandsComputer
 import org.intocps.orchestration.coe.modeldefinition.ModelDescription
 import org.scalatest.FlatSpec
 
 import scala.collection.JavaConverters._
 
-class InitialisationTest extends FlatSpec {
+class InitialisationTests extends FlatSpec {
 
   val tankFmu = FMUWithMD("tank",
     new ModelDescription(new File("src/test/resources/single-watertank/modelDescription-singlewatertank-20sim.xml")))
@@ -34,15 +34,15 @@ class InitialisationTest extends FlatSpec {
 
   val allConnections = Set(internalCon1, interCon2, internalCon3, ext1);
 
-  val dependentVariables = InitialisationCommandComputer.calcDependentVariables(allConnections)
+  val dependentVariables = InitialisationCommandsComputer.calcDependentVariables(allConnections)
   "test 1" should "verify three dependents" in {
     assert(dependentVariables.size == 3)
   }
-  val orderedVariablesH: Seq[ConnectionScalarVariable] = InitialisationCommandComputer.calcDependencies(allConnections, dependentVariables.head)
-  val orderedVariablesL: Seq[ConnectionScalarVariable] = InitialisationCommandComputer.calcDependencies(allConnections, dependentVariables.last)
+  val orderedVariablesH: Seq[ConnectionScalarVariable] = InitialisationCommandsComputer.calcDependencies(allConnections, dependentVariables.head)
+  val orderedVariablesL: Seq[ConnectionScalarVariable] = InitialisationCommandsComputer.calcDependencies(allConnections, dependentVariables.last)
 
 
-  val orderedVariables: Set[Seq[ConnectionScalarVariable]] = dependentVariables.map(dependentVariable => InitialisationCommandComputer.calcDependencies(allConnections, dependentVariable))
+  val orderedVariables: Set[Seq[ConnectionScalarVariable]] = dependentVariables.map(dependentVariable => InitialisationCommandsComputer.calcDependencies(allConnections, dependentVariable))
   "test 2" should "verify calcDependecies function" in {
 
     assert(orderedVariables.size == 3)
@@ -59,14 +59,14 @@ class InitialisationTest extends FlatSpec {
       }
     )
   )
-  val q: Set[Seq[Command]] = z.map(SEQ => InitialisationCommandComputer.calcCommandsForRuntime(SEQ))
+  val q: Set[Seq[Command]] = z.map(SEQ => InitialisationCommandsComputer.calcCommandsForRuntime(SEQ))
   "test 3" should "verify calcCommandsForRuntime function" in {
 
     assert(q.size == 3)
   }
 
 
-  val w: MaestroV2Command = InitialisationCommandComputer.calcInitializationScalarCommand(allConnections, Set((tankFmu, Set(tankInstance.name)), (controlFmu, Set(controlInstance.name))))
+  val w: MaestroV2Command = InitialisationCommandsComputer.calcInitializationScalarCommand(allConnections, Set((tankFmu, Set(tankInstance.name)), (controlFmu, Set(controlInstance.name))))
   "test 3" should "verify calcInitializationScalarCommand function" in {
 
     assert(!(Nil equals w))

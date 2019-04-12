@@ -7,7 +7,7 @@ import org.intocps.orchestration.coe.modeldefinition.ModelDescription.{Causality
 
 import scala.collection.JavaConverters._
 
-object InitialisationCommandComputer {
+object InitialisationCommandsComputer {
   /*
     This function returns the commands performed in the initialization state
     TODO  currently we rely on the assumption that there are no algebraic loops
@@ -69,9 +69,9 @@ object InitialisationCommandComputer {
 
   */
   def calcDependencies(connections: Set[Connection], variableUnderAnalysis: ConnectionScalarVariable): Seq[ConnectionScalarVariable] = {
-    //filteredVariables contains all the connection with variableunderanalysis in the destination
+    //filteredVariables contains all the connection with variableUnderAnalysis in the destination
     val filteredVariables: Set[Connection] = connections.filter(connection => connection.to.contains(variableUnderAnalysis))
-    //parentVariables contains all the source variables of the variableunderanalysis( direct fathers)
+    //parentVariables contains all the source variables of the variableUnderAnalysis( direct fathers)
     val parentVariables: Seq[ConnectionScalarVariable] = filteredVariables.map(connection => connection.from).toSeq
     //if parentVariables is empty, CASE BASE of recursion and return a Seq composed only of the current variable under analysis
     if (parentVariables.isEmpty) {
@@ -103,7 +103,7 @@ object InitialisationCommandComputer {
         CSV => {
           // for each variable we find its own FMU
           val currentFMU: Set[FMUWithMD] = allFMU.filter(fmu => fmu.key == CSV.vInstance.fmu)
-          // currentFMU is a Set of a single element, so we can only use the head to find all the varibles of the FMU
+          // currentFMU is a Set of a single element, so we can only use the head to find all the variables of the FMU
           val currentVariables: Set[ModelDescription.ScalarVariable] = currentFMU.head.modelDescription.getScalarVariables.asScala.toSet
           //then we can filter the list to retrieve the variable under analysis
           val currentVariable: Set[ModelDescription.ScalarVariable] = currentVariables.filter(variable => variable.name == CSV.vName)
@@ -119,7 +119,7 @@ object InitialisationCommandComputer {
    */
   def calcCommandsForRuntime(orderedVariables: Seq[EnrichedConnectionScalarVariable]): Seq[Command] = {
     val x: Seq[Command] = orderedVariables.map(variable => {
-      // since SetCMD and GetCMD require a List of valueref but we have only 1 valueref we need to create a list of 1 element
+      // since SetCMD and GetCMD require a List of valueRef but we have only 1 valueRef we need to create a list of 1 element
       val listOfReference: List[Long] = List[Long](variable.valueRef)
       // if the variable is an Input or a Parameter its a SetCMD otherwise its a GetCMD
       if (variable.causality == Causality.Input || variable.causality == Causality.Parameter)
