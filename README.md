@@ -1,2 +1,5 @@
 # MaestroV2
 Version 2 of Maestro - a Co-Simulation Orchestration Engine based on FMI 2.0 for Co-Simulation
+
+## Development Environment 
+- Maven 3.6.0 
