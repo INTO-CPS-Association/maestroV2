@@ -59,7 +59,7 @@ object App {
 
     // Enrich instances with their respective model descriptions.
     val enrichedInstances: Option[Set[InstanceFMUWithMD]] =
-      FunctorFunctions.sequence(instances.map(
+      TraversableFunctions.sequence(instances.map(
         x => {
           val fmuWithMd: Option[FMUWithMD] = FMUsWithMDs.find(y => y.key == x.fmu)
           fmuWithMd match {
