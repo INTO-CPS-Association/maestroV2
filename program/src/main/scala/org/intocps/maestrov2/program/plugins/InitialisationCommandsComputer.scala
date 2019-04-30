@@ -38,8 +38,10 @@ object InitialisationCommandsComputer {
 
     // we need to convert the sequences of variables into sequences of enrichedvariables
     val setOfSeqOfEnrichedOrderedVariables: Set[Seq[EnrichedConnectionScalarVariable]] = convertConnectionScalarVariable2EnrichedConnectionScalarVariable(setOfSeqOfOrderedVariables, groupByFMU)
+    // Remove parameters TODO: Improve this
+    val setOfSeqOfEnrichedOrderedVariables_ = setOfSeqOfEnrichedOrderedVariables.map(x => x.filter(y => y.causality != Causality.Parameter))
     // we flatten the Set with distinct so that we keep the order but avoid replications
-    val flattenedSeqOfEnrichedOrderedVariables: Seq[EnrichedConnectionScalarVariable] = setOfSeqOfEnrichedOrderedVariables.toSeq.flatten.distinct
+    val flattenedSeqOfEnrichedOrderedVariables: Seq[EnrichedConnectionScalarVariable] = setOfSeqOfEnrichedOrderedVariables_.toSeq.flatten.distinct
     // we change the variable with the FMIcommand( Set or Get based on the causality)
     val seqOfCommands: Seq[Command] = {
       calcCommandsForRuntime(flattenedSeqOfEnrichedOrderedVariables)

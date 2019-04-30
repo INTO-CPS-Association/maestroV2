@@ -1,7 +1,7 @@
 import java.io.File
 
 import org.intocps.maestrov2.data._
-import org.intocps.maestrov2.program.commands.{Command, MaestroV2Command}
+import org.intocps.maestrov2.program.commands.{Command, CommandPrettyPrinter, MaestroV2Command}
 import org.intocps.maestrov2.program.plugins.InitialisationCommandsComputer
 import org.intocps.orchestration.coe.modeldefinition.ModelDescription
 import org.scalatest.FlatSpec
@@ -68,6 +68,8 @@ class InitialisationTests extends FlatSpec {
 
   val w: MaestroV2Command = InitialisationCommandsComputer.calcInitializationScalarCommand(allConnections, Set((tankFmu, Set(tankInstance.name)), (controlFmu, Set(controlInstance.name))))
   "test 3" should "verify calcInitializationScalarCommand function" in {
+
+    println(CommandPrettyPrinter.PrintCommands(w, 0));
 
     assert(!(Nil equals w))
   }
