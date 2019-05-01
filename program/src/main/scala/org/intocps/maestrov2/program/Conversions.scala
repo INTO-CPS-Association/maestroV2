@@ -24,7 +24,7 @@ object Conversions {
     // Skip .
     val vName = instanceSplit._2.substring(1);
 
-    return ConnectionScalarVariable(vName, Instance(instance, fmuKey));
+    ConnectionScalarVariable(vName, Instance(instance, fmuKey));
 
   }
 
@@ -38,7 +38,6 @@ object Conversions {
   def MMCConnectionsToMaestroConnections(mmcConnections: Map[String, List[String]]) : Set[Connection] =
   {
     mmcConnections.map(x => configConnectionToConnection(x)).toSet
-
   }
 
 }

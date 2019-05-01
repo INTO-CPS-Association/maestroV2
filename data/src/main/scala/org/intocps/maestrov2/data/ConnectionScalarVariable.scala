@@ -9,3 +9,7 @@ case class ConnectionScalarVariable(vName: String, vInstance: Instance) {
   }
 }
 
+// A ConnectionScalarVariable is a ScalarVariable in context of a connection
+case class ConnectionScalarVariableIndependent(vName: String)
+
+

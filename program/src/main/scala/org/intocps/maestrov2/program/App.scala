@@ -20,7 +20,8 @@ object App {
   def main(args : Array[String]) {
     if (args.length == 1) {
       val mmc: Either[String, MultiModelConfiguration] = ConfigurationHandler.loadMMCFromFile(new File(args(0)));
-      mmc.map(x => contAfterMMCLoaded(x));
+      //mmc.map(x => contAfterMMCLoaded(x));
+      mmc.map(Program.computeProgram(_))
 
 
     }
