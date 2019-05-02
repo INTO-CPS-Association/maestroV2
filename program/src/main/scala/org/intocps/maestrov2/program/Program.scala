@@ -14,22 +14,6 @@ import org.intocps.orchestration.coe.modeldefinition.ModelDescription
 import scala.collection.immutable
 
 object Program {
-
-  private def computeCommands(is: Map[FMUWithMD, Set[Instance]], connections: Set[Connection]): MaestroV2Command = {
-    val isInstanceCommandsView: Map[FMUWithMD, Set[String]] = is.map { case (k, is) => (k, is.map(i => i.name)) }
-
-    val isSetView = isInstanceCommandsView.toSet
-
-    val instantiate: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a, b) => InstantiateCMD(a, b))
-    val setupExperiment = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a, b) => SetupExperimentCMD(a, b))
-    val setIniCommands: MaestroV2Command = InstantiatedCommandsComputer.calcSetINI(isSetView)
-    val enterInitCommands: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a, b) => EnterInitializationModeCMD(a, b))
-    val initializationScalarCommand: MaestroV2Command = InitialisationCommandsComputer.calcInitializationScalarCommand(connections, isSetView)
-    val exitInitCommands: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a, b) => ExitInitializationModeCMD(a, b))
-
-    MaestroV2Seq(List(instantiate, setupExperiment, setIniCommands, enterInitCommands, initializationScalarCommand, exitInitCommands))
-  }
-
   def computeProgram(mmc: MultiModelConfiguration): Either[Exception, MaestroV2Command] = {
     // External Connections are connections between outputs of one FMU and inputs of another FMU
     val externalConnections: Set[Connection] = Conversions.MMCConnectionsToMaestroConnections(mmc.connections)
@@ -45,20 +29,34 @@ object Program {
       acc.+(fmu -> is)
     }
 
-
     // All connections are both internal and external connections
     val allConnections: Set[Connection] = externalConnections.union(
       Connections.FMUInternalConnectionsToConnections(fmus))
 
     // TODO: PLUGIN
     // Perform topological sorting
-    val topSortedSVs: Either[Exception, List[ConnectionScalarVariable]] = topologicalSort(allConnections)
+    val topologicalSortedSVs: Either[Exception, List[ConnectionScalarVariable]] = topologicalSort(allConnections)
 
     // TODO: Use topSortedSVs
-    val program: Either[Exception, MaestroV2Command] = topSortedSVs.map(_ => computeCommands(fmus, allConnections))
+    val program: Either[Exception, MaestroV2Command] = topologicalSortedSVs.map(_ => computeCommands(fmus, allConnections))
 
     program
 
+  }
+
+  def computeCommands(is: Map[FMUWithMD, Set[Instance]], connections: Set[Connection]): MaestroV2Command = {
+    val isInstanceCommandsView: Map[FMUWithMD, Set[String]] = is.map { case (k, is) => (k, is.map(i => i.name)) }
+
+    val isSetView = isInstanceCommandsView.toSet
+
+    val instantiate: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a, b) => InstantiateCMD(a, b))
+    val setupExperiment = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a, b) => SetupExperimentCMD(a, b))
+    val setIniCommands: MaestroV2Command = InstantiatedCommandsComputer.calcSetINI(isSetView)
+    val enterInitCommands: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a, b) => EnterInitializationModeCMD(a, b))
+    val initializationScalarCommand: MaestroV2Command = InitialisationCommandsComputer.calcInitializationScalarCommand(connections, isSetView)
+    val exitInitCommands: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a, b) => ExitInitializationModeCMD(a, b))
+
+    MaestroV2Seq(List(instantiate, setupExperiment, setIniCommands, enterInitCommands, initializationScalarCommand, exitInitCommands))
   }
 
   def topologicalSort(connections: Set[Connection]): Either[AlgebraicLoopException, List[ConnectionScalarVariable]] = {
