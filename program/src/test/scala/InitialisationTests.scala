@@ -10,38 +10,58 @@ import scala.collection.JavaConverters._
 
 class InitialisationTests extends FlatSpec {
 
-  val tankFmu = FMUWithMD("tank",
-    new ModelDescription(new File("src/test/resources/single-watertank/modelDescription-singlewatertank-20sim.xml")))
-  val tankInstance = new InstanceFMUWithMD("t", tankFmu);
 
-  val controlFmu = FMUWithMD("control",
-    new ModelDescription(new File("src/test/resources/single-watertank/modelDescription-watertankcontroller-c.xml")))
-  val controlInstance = new InstanceFMUWithMD("c", controlFmu);
+  /*      |----------------------NOT USED--------------------------|
+          |   |------------|                |----------------|     |
+          |->level  ----->valve -->  valvecontrol  ------> level---|
+              |         |  |                |                |
+            minLevel ---^  |                |                |
+              |            |                |                |
+              |  control c |                |      tank t    |
+              |------------|                |----------------|
 
-  val interCon1Input = ConnectionScalarVariable("level", Instance("c", "control"))
-  val interCon1Input1 = ConnectionScalarVariable("minlevel", Instance("c", "control"))
+   */
 
-  val interCon1Output = ConnectionScalarVariable("valve", Instance("c", "control"))
-  val internalCon1 = Connection(interCon1Input, Set(interCon1Output), ConnectionType.Internal)
-  val internalCon3 = Connection(interCon1Input1, Set(interCon1Output), ConnectionType.Internal)
+  val tankFmu = TestData.tankFmu
+  val tankInstance = InstanceFMUWithMD("t", tankFmu);
 
-  val interCon2Input = ConnectionScalarVariable("valvecontrol", Instance("t", "tank"))
-  val interCon2Output = ConnectionScalarVariable("level", Instance("t", "tank"))
-  val interCon2 = Connection(interCon2Input, Set(interCon2Output), ConnectionType.Internal)
+  val controlFmu = TestData.controlFmu
+  val controlInstance = InstanceFMUWithMD("c", controlFmu);
 
-  val ext1 = Connection(interCon1Output, Set(interCon2Input), ConnectionType.External)
-  val ext2 = Connection(interCon2Output, Set(interCon1Input), ConnectionType.External)
+  val controlInput = ConnectionScalarVariable("level", Instance("c", "control"))
+  val controlInput2 = ConnectionScalarVariable("minlevel", Instance("c", "control"))
 
-  val allConnections = Set(internalCon1, interCon2, internalCon3, ext1);
+  val controlOutput = ConnectionScalarVariable("valve", Instance("c", "control"))
+  // level -> valve
+  val controlInternalConnection = Connection(controlInput, Set(controlOutput), ConnectionType.Internal)
+  // minlevel -> valve
+  val controlInternalConnection2 = Connection(controlInput2, Set(controlOutput), ConnectionType.Internal)
+
+
+  val tankInput = ConnectionScalarVariable("valvecontrol", Instance("t", "tank"))
+  val tankOutput = ConnectionScalarVariable("level", Instance("t", "tank"))
+  // valveControl -> Level
+  val tankInternalConnection = Connection(tankInput, Set(tankOutput), ConnectionType.Internal)
+
+  // control.valve -> tank.valvecontrol
+  val ext1 = Connection(controlOutput, Set(tankInput), ConnectionType.External)
+  // tank.level -> control.level
+  val ext2 = Connection(tankOutput, Set(controlInput), ConnectionType.External)
+
+  val allConnections = Set(controlInternalConnection, tankInternalConnection, controlInternalConnection2, ext1);
 
   val dependentVariables = InitialisationCommandsComputer.calcDependentVariables(allConnections)
-  "test 1" should "verify three dependents" in {
+
+  "calcDependentVariables" should "verify three dependents" in {
+    val expected = Set(controlOutput, tankOutput, tankInput);
     assert(dependentVariables.size == 3)
+    assert(expected.equals(dependentVariables))
   }
+
+
+
   val orderedVariablesH: Seq[ConnectionScalarVariable] = InitialisationCommandsComputer.calcDependencies(allConnections, dependentVariables.head)
   val orderedVariablesL: Seq[ConnectionScalarVariable] = InitialisationCommandsComputer.calcDependencies(allConnections, dependentVariables.last)
-
-
   val orderedVariables: Set[Seq[ConnectionScalarVariable]] = dependentVariables.map(dependentVariable => InitialisationCommandsComputer.calcDependencies(allConnections, dependentVariable))
   "test 2" should "verify calcDependecies function" in {
 

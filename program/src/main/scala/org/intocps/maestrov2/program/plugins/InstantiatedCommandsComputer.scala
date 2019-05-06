@@ -12,7 +12,6 @@ object InstantiatedCommandsComputer {
      INI is one of: Real, Integer, Boolean, String for a variable with
      variability != constant
      initial == "exact" || "approx"
-     TODO: Move to plugins folder
       */
   def calcSetINI(groupByFMU: Set[(FMUWithMD, Set[String])]): MaestroV2Command = {
     val x: Set[Command] = groupByFMU.map { case (fmu, setInstances) =>

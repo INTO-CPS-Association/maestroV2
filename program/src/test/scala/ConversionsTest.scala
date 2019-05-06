@@ -3,10 +3,6 @@ import org.intocps.maestrov2.program.Conversions
 import org.scalatest.FlatSpec
 
 class ConversionsTest extends FlatSpec{
-
-
-
-
   "configVarToConnectionSV" should "Convert a connection variable to a ConnectionScalarVariable" in {
     val test = "{key}.instance.var.alsoVar"
     val expected = ConnectionScalarVariable("var.alsoVar", Instance("instance", "key"));
@@ -16,7 +12,7 @@ class ConversionsTest extends FlatSpec{
 
   }
 
-  "configConnectionToConnection" should "Convert a connection to a Connection" in {
+  "configConnectionToConnection" should "Convert a MultiModelConfiguration connection to a Connection" in {
     val test = ("{key}.instance.output",List("{key1}.instance1.input1", "{key2}.instance2.input2"));
     val output = ConnectionScalarVariable("output", Instance("instance", "key"));
     val input1 = ConnectionScalarVariable("input1", Instance("instance1", "key1"));

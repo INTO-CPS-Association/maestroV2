@@ -47,14 +47,14 @@ object Program {
   def computeCommands(is: Map[FMUWithMD, Set[Instance]], connections: Set[Connection]): MaestroV2Command = {
     val isInstanceCommandsView: Map[FMUWithMD, Set[String]] = is.map { case (k, is) => (k, is.map(i => i.name)) }
 
-    val isSetView = isInstanceCommandsView.toSet
+    val isSetView: Set[(FMUWithMD, Set[String])] = isInstanceCommandsView.toSet
 
-    val instantiate: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a, b) => InstantiateCMD(a, b))
-    val setupExperiment = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a, b) => SetupExperimentCMD(a, b))
+    val instantiate: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a : FMUWithMD, b: Set[String]) => InstantiateCMD(a.key, b))
+    val setupExperiment = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a : FMUWithMD, b: Set[String]) => SetupExperimentCMD(a.key, b))
     val setIniCommands: MaestroV2Command = InstantiatedCommandsComputer.calcSetINI(isSetView)
-    val enterInitCommands: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a, b) => EnterInitializationModeCMD(a, b))
+    val enterInitCommands: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a : FMUWithMD, b: Set[String]) => EnterInitializationModeCMD(a.key, b))
     val initializationScalarCommand: MaestroV2Command = InitialisationCommandsComputer.calcInitializationScalarCommand(connections, isSetView)
-    val exitInitCommands: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a, b) => ExitInitializationModeCMD(a, b))
+    val exitInitCommands: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a : FMUWithMD, b: Set[String]) => ExitInitializationModeCMD(a.key, b))
 
     MaestroV2Seq(List(instantiate, setupExperiment, setIniCommands, enterInitCommands, initializationScalarCommand, exitInitCommands))
   }

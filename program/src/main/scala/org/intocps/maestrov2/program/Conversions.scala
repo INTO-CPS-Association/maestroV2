@@ -3,9 +3,6 @@ package org.intocps.maestrov2.program
 import org.intocps.maestrov2.data.{Connection, ConnectionScalarVariable, ConnectionType, Instance}
 
 object Conversions {
-
-
-
   def configVarToConnectionSV(configVar: String) : ConnectionScalarVariable =
   {
     // Skip initial {
