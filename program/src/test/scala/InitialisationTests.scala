@@ -59,14 +59,14 @@ class InitialisationTests extends FlatSpec {
   }
 
 
-
-  val orderedVariablesH: Seq[ConnectionScalarVariable] = InitialisationCommandsComputer.calcDependencies(allConnections, dependentVariables.head)
-  val orderedVariablesL: Seq[ConnectionScalarVariable] = InitialisationCommandsComputer.calcDependencies(allConnections, dependentVariables.last)
   val orderedVariables: Set[Seq[ConnectionScalarVariable]] = dependentVariables.map(dependentVariable => InitialisationCommandsComputer.calcDependencies(allConnections, dependentVariable))
-  "test 2" should "verify calcDependecies function" in {
+  "calcDependencies" should " calculated chained dependencies" in {
 
     assert(orderedVariables.size == 3)
   }
+
+
+
   val z: Set[Seq[EnrichedConnectionScalarVariable]] = orderedVariables.map(
     seqCSV => seqCSV.map(
       CSV => {
@@ -80,17 +80,18 @@ class InitialisationTests extends FlatSpec {
     )
   )
   val q: Set[Seq[Command]] = z.map(SEQ => InitialisationCommandsComputer.calcCommandsForRuntime(SEQ))
-  "test 3" should "verify calcCommandsForRuntime function" in {
+  "calcCommandsForRuntime" should "convert sequence of variables to CMDs" in {
 
     assert(q.size == 3)
   }
 
 
+
   val w: MaestroV2Command = InitialisationCommandsComputer.calcInitializationScalarCommand(allConnections, Set((tankFmu, Set(tankInstance.name)), (controlFmu, Set(controlInstance.name))))
-  "test 3" should "verify calcInitializationScalarCommand function" in {
+  "calcInitializationScalarCommand" should "cmpute the get and set commands for the initialization phase" in {
 
     println(CommandPrettyPrinter.PrintCommands(w, 0));
-
+    // Todo: The test needs to ensure the correct order of set and gets
     assert(!(Nil equals w))
   }
 }
