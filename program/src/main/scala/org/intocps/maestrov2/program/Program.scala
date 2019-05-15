@@ -59,8 +59,8 @@ object Program {
     val ma : Option[MaestroV2Seq] = JacobianMA.computeJacobianIteration2(isInstanceCommandsView, connections)
 
     val program: Option[MaestroV2Seq] = for {
-      masterALgo <- ma
-    } yield MaestroV2Seq(List(instantiate, setupExperiment, setIniCommands, enterInitCommands, initializationScalarCommand, exitInitCommands))
+      masterAlgo <- ma
+    } yield MaestroV2Seq(List(instantiate, setupExperiment, setIniCommands, enterInitCommands, initializationScalarCommand, exitInitCommands, masterAlgo))
 
     program match {
       case None => Left(exceptions.ProgramComputationFailedException("One or more program computation steps failed"))
