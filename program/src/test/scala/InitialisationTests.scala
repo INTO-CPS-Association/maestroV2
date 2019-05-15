@@ -48,7 +48,9 @@ class InitialisationTests extends FlatSpec {
   // tank.level -> control.level
   val ext2 = Connection(tankOutput, Set(controlInput), ConnectionType.External)
 
-  val allConnections = Set(controlInternalConnection, tankInternalConnection, controlInternalConnection2, ext1);
+  val externalConnections = Set(ext1)
+
+  val allConnections = Set(controlInternalConnection, tankInternalConnection, controlInternalConnection2).union(externalConnections)
 
   val dependentVariables = InitialisationCommandsComputer.calcDependentVariables(allConnections)
 

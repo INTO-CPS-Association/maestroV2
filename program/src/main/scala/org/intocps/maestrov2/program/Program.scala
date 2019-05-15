@@ -7,8 +7,8 @@ import org.intocps.fmi.IFmu
 import org.intocps.fmi.jnifmuapi.Factory
 import org.intocps.maestrov2.data._
 import org.intocps.maestrov2.program.commands._
-import org.intocps.maestrov2.program.exceptions.AlgebraicLoopException
-import org.intocps.maestrov2.program.plugins.{IODependencyCalculator, InitialisationCommandsComputer}
+import org.intocps.maestrov2.program.exceptions.{AlgebraicLoopException, ProgramComputationFailedException}
+import org.intocps.maestrov2.program.plugins.{IODependencyCalculator, InitialisationCommandsComputer, JacobianMA}
 import org.intocps.orchestration.coe.modeldefinition.ModelDescription
 
 import scala.collection.immutable
@@ -38,13 +38,13 @@ object Program {
     val topologicalSortedSVs: Either[Exception, List[ConnectionScalarVariable]] = topologicalSort(allConnections)
 
     // TODO: Use topSortedSVs
-    val program: Either[Exception, MaestroV2Command] = topologicalSortedSVs.map(_ => computeCommands(fmus, allConnections))
+    val program: Either[Exception, MaestroV2Command] = topologicalSortedSVs.flatMap(_ => computeCommands(fmus, allConnections))
 
     program
 
   }
 
-  def computeCommands(is: Map[FMUWithMD, Set[Instance]], connections: Set[Connection]): MaestroV2Command = {
+  def computeCommands(is: Map[FMUWithMD, Set[Instance]], connections: Set[Connection]) = {
     val isInstanceCommandsView: Map[FMUWithMD, Set[String]] = is.map { case (k, is) => (k, is.map(i => i.name)) }
 
     val isSetView: Set[(FMUWithMD, Set[String])] = isInstanceCommandsView.toSet
@@ -56,7 +56,16 @@ object Program {
     val initializationScalarCommand: MaestroV2Command = InitialisationCommandsComputer.calcInitializationScalarCommand(connections, isSetView)
     val exitInitCommands: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a : FMUWithMD, b: Set[String]) => ExitInitializationModeCMD(a.key, b))
 
-    MaestroV2Seq(List(instantiate, setupExperiment, setIniCommands, enterInitCommands, initializationScalarCommand, exitInitCommands))
+    val ma : Option[MaestroV2Seq] = JacobianMA.computeJacobianIteration2(isInstanceCommandsView, connections)
+
+    val program: Option[MaestroV2Seq] = for {
+      masterALgo <- ma
+    } yield MaestroV2Seq(List(instantiate, setupExperiment, setIniCommands, enterInitCommands, initializationScalarCommand, exitInitCommands))
+
+    program match {
+      case None => Left(exceptions.ProgramComputationFailedException("One or more program computation steps failed"))
+      case Some(value) => Right(value)
+    }
   }
 
   def topologicalSort(connections: Set[Connection]): Either[AlgebraicLoopException, List[ConnectionScalarVariable]] = {
