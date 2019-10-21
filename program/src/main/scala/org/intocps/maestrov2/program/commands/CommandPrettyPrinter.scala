@@ -29,8 +29,13 @@ object CommandPrettyPrinter {
         val x = commands.map(x => "\n" ++ indents ++ PrintCommands(x, indentCount+1))
         x.mkString(",")
       }
+      case SimulationPhase(command) => "Phase[%s]".format{
+        PrintMaestroV2Commands(command, indentCount+1)
+      }
     }
   }
+
+
 
   def PrintFMICmd(cmd: FMICommand): String = {
     cmd match {

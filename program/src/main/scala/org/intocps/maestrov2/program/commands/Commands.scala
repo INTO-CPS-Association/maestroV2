@@ -5,6 +5,7 @@ sealed trait Command
 sealed trait MaestroV2Command extends Command
 case class MaestroV2Set(commands: Set[Command]) extends MaestroV2Command
 case class MaestroV2Seq(commands: Seq[Command]) extends MaestroV2Command
+case class SimulationPhase(command: MaestroV2Command) extends MaestroV2Command
 
 sealed trait FMICommand extends Command
 case class InstantiateCMD(fmu: String, instances: Set[String]) extends FMICommand

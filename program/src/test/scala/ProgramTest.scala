@@ -9,10 +9,10 @@ class ProgramTest extends FlatSpec {
 
   "computeProgram" should "Compute a program" in {
 
-    val is = Map(TestData.tankFmu -> Set(Instance("t", "tank")), TestData.controlFmu -> Set(Instance("c", "control")))
+    val instances = Map(TestData.tankFmu -> Set(Instance("t", "tank")), TestData.controlFmu -> Set(Instance("c", "control")))
     val connections = TestData.Scenario1.allConnections;
 
-    val prog = Program.computeCommands(is, connections)
+    val prog = Program.computeCommands(instances, connections)
     assert(prog.isRight)
     prog.map(x => println(CommandPrettyPrinter.PrintCommands(x,0)))
   }

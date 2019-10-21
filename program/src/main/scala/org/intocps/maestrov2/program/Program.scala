@@ -56,7 +56,7 @@ object Program {
     val initializationScalarCommand: MaestroV2Command = InitialisationCommandsComputer.calcInitializationScalarCommand(connections, isSetView)
     val exitInitCommands: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a : FMUWithMD, b: Set[String]) => ExitInitializationModeCMD(a.key, b))
 
-    val ma : Option[MaestroV2Seq] = JacobianMA.computeJacobianIteration2(isInstanceCommandsView, connections)
+    val ma : Option[SimulationPhase] = JacobianMA.computeJacobianIteration2(isInstanceCommandsView, connections.filter(x => x.typeOf == ConnectionType.External)).map(x => SimulationPhase(x));
 
     val program: Option[MaestroV2Seq] = for {
       masterAlgo <- ma
