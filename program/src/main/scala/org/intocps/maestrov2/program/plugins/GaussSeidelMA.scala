@@ -27,12 +27,23 @@ object GaussSeidelMA {
 
     val enrichedOrder : Seq[EnrichedConnectionScalarVariable] = order.map(x=>convertConnectionScalarVariable2EnrichedConnectionScalarVariable(instances,x))
 
-    val enrichedOrderGroupedByInstance : Map[Instance, Seq[EnrichedConnectionScalarVariable]] = enrichedOrder.groupBy(x=> x.vInstance)
+    val instanceOrder : Seq[Instance] = order.map(x=>x.vInstance).distinct
+
+    val enrichedOrderGroupedByInstance : Seq[(Instance, Seq[EnrichedConnectionScalarVariable])] = createInstanceVariableMap(instanceOrder,enrichedOrder)
 
     val GaussSeidelcommands : Seq[MaestroV2Seq] = enrichedOrderGroupedByInstance.toSeq.map(instance=>instanceScalarToInstanceCommand(instance))
 
     MaestroV2Seq(GaussSeidelcommands)
  }
+
+  /*
+  this function combines the ordered Seq of the Instances with the list of variables of the instances
+  */
+   def createInstanceVariableMap(instances : Seq[Instance], variables : Seq[EnrichedConnectionScalarVariable] ) : Seq[(Instance,Seq[EnrichedConnectionScalarVariable])] = {
+    //val states = Map((instances.head, variables.filter(x=>x.vInstance == instances.head)),(instances.last, variables.filter(x=>x.vInstance == instances.last)))
+    val instanceVariableMap = instances.map(instance => (instance,variables.filter(x=>x.vInstance == instance)))
+    instanceVariableMap
+  }
 
   /*
  this function converts a  ConnectionScalarVariable into an EnrichedScalarVariables,
@@ -43,7 +54,7 @@ object GaussSeidelMA {
     val currentFMU: Set[InstanceFMUWithMD] = groupByFMU.filter(fmu => fmu.name == variable.vInstance.name)
     val currentVariable: ModelDescription.ScalarVariable = currentFMU.head.fmu.modelDescription.getScalarVariables.asScala.filter(x => x.name == variable.vName).head
     val enrichedVariable: EnrichedConnectionScalarVariable = EnrichedConnectionScalarVariable(variable.vName, variable.vInstance, currentVariable.causality, currentVariable.valueReference)
-    enrichedVariable;
+    enrichedVariable
   }
 
   /*
