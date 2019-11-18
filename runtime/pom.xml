@@ -1,0 +1,63 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <artifactId>maestrov2</artifactId>
+        <groupId>org.intocps.maestro_v2</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>runtime</artifactId>
+    <name>${project.artifactId}</name>
+    <description>My wonderfull scala app</description>
+    <inceptionYear>2018</inceptionYear>
+    <licenses>
+        <license>
+            <name>My License</name>
+            <url>http://....</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <encoding>UTF-8</encoding>
+        <scala.version>2.12.6</scala.version>
+        <scala.compat.version>2.12</scala.compat.version>
+        <spec2.version>4.2.0</spec2.version>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.intocps.maestro_v2</groupId>
+            <artifactId>data</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.intocps.maestro_v2</groupId>
+            <artifactId>program</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>org.scala-lang</groupId>-->
+            <!--<artifactId>scala-library</artifactId>-->
+            <!--<version>${scala.version}</version>-->
+        <!--</dependency>-->
+
+        <!-- Test -->
+
+    </dependencies>
+
+    <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <plugins>
+            <plugin>
+                <!-- Inherited from parent -->
+                <artifactId>scala-maven-plugin</artifactId>
+                <groupId>net.alchim31.maven</groupId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

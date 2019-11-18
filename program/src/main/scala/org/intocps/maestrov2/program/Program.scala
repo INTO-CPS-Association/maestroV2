@@ -5,6 +5,7 @@ import java.io.File
 
 import org.intocps.fmi.IFmu
 import org.intocps.fmi.jnifmuapi.Factory
+import org.intocps.maestrov2.data.Control.Simulation
 import org.intocps.maestrov2.data._
 import org.intocps.maestrov2.program.commands._
 import org.intocps.maestrov2.program.exceptions.{AlgebraicLoopException, ProgramComputationFailedException}
@@ -44,7 +45,7 @@ object Program {
 
   }
 
-  def computeCommands(is: Map[FMUWithMD, Set[Instance]], connections: Set[Connection]) = {
+  def computeCommands(is: Map[FMUWithMD, Set[Instance]], connections: Set[Connection]): Either[ProgramComputationFailedException, MaestroV2Seq] = {
     val isInstanceCommandsView: Map[FMUWithMD, Set[String]] = is.map { case (k, is) => (k, is.map(i => i.name)) }
 
     val isSetView: Set[(FMUWithMD, Set[String])] = isInstanceCommandsView.toSet
@@ -59,8 +60,8 @@ object Program {
     val ma : Option[SimulationPhase] = JacobianMA.computeJacobianIteration2(isInstanceCommandsView, connections.filter(x => x.typeOf == ConnectionType.External)).map(x => SimulationPhase(x));
 
     val program: Option[MaestroV2Seq] = for {
-      masterAlgo <- ma
-    } yield MaestroV2Seq(List(instantiate, setupExperiment, setIniCommands, enterInitCommands, initializationScalarCommand, exitInitCommands, masterAlgo))
+      masterAlgorithm <- ma
+    } yield MaestroV2Seq(Seq(instantiate, setupExperiment, setIniCommands, enterInitCommands, initializationScalarCommand, exitInitCommands, GoToPhase(Simulation(None)), masterAlgorithm))
 
     program match {
       case None => Left(exceptions.ProgramComputationFailedException("One or more program computation steps failed"))

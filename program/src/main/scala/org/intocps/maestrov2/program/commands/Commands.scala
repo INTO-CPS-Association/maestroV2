@@ -1,10 +1,13 @@
 package org.intocps.maestrov2.program.commands
 
+import org.intocps.maestrov2.data.Control.Phase
+
 sealed trait Command
 
 sealed trait MaestroV2Command extends Command
 case class MaestroV2Set(commands: Set[Command]) extends MaestroV2Command
 case class MaestroV2Seq(commands: Seq[Command]) extends MaestroV2Command
+case class InitializationPhase(command: MaestroV2Command) extends MaestroV2Command
 case class SimulationPhase(command: MaestroV2Command) extends MaestroV2Command
 
 sealed trait FMICommand extends Command
@@ -16,3 +19,6 @@ case class ExitInitializationModeCMD(fmu: String, instances: Set[String]) extend
 case class SetCMD(fmu: String, instance: String, scalarVariables: Set[Long]) extends FMICommand
 case class GetCMD(fmu: String, instance: String, scalarVariables: Set[Long]) extends FMICommand
 case class DoStepCMD(fmu: String, instance: String) extends FMICommand
+
+sealed trait ControlCommand extends Command
+case class GoToPhase(phase : Phase) extends ControlCommand

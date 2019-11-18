@@ -1,12 +1,17 @@
 package org.intocps.maestrov2.program.commands
 
+import org.intocps.maestrov2.data.Control.{Phase, Simulation}
+
+import scala.collection.GenTraversableOnce
+
 object CommandPrettyPrinter {
 
-  def PrintCommands(cmd: Command, indentCount: Int): String = {
-    cmd match {
-      case x: MaestroV2Command => PrintMaestroV2Commands(x, indentCount)
-        case y: FMICommand => PrintFMICmd(y)
-    }
+
+
+  def PrintCommands(cmd: Command, indentCount: Int): String = cmd match {
+    case x: MaestroV2Command => PrintMaestroV2Commands(x, indentCount)
+    case x: FMICommand => PrintFMICmd(x)
+    case x : ControlCommand => PrintControlCmd(x)
   }
 
   def PrintMaestroV2Commands(cmd: MaestroV2Command, indentCount: Int): String = {
@@ -37,6 +42,9 @@ object CommandPrettyPrinter {
 
 
 
+
+
+
   def PrintFMICmd(cmd: FMICommand): String = {
     cmd match {
       case InstantiateCMD(fmu, instances: Set[String]) => "instantiateCMD(%s-(%s))".format(fmu, instances.mkString(","))
@@ -50,5 +58,9 @@ object CommandPrettyPrinter {
     }
   }
 
+  def PrintControlCmd(cmd: ControlCommand): String = cmd match {case GoToPhase(phase) => "Go To Phase: " ++ printPhase(phase)}
+  def printPhase(phase: Phase): String = phase match {
+    case Simulation(data) => "Simulation"
+  }
 
 }

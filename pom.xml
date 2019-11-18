@@ -12,6 +12,7 @@
         <module>data</module>
         <module>DependencyCalculatorPlugin</module>
         <module>program</module>
+        <module>runtime</module>
     </modules>
 
 
