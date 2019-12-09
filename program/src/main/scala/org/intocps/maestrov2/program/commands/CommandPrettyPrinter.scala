@@ -1,6 +1,8 @@
 package org.intocps.maestrov2.program.commands
 
-import org.intocps.maestrov2.data.Control.{Phase, Simulation}
+
+import org.intocps.maestrov2.program.controlCommands.Keyword.Keyword
+import org.intocps.maestrov2.program.controlCommands.{Condition, ControlCommand, ExecuteTill, KeywordCondition}
 
 import scala.collection.GenTraversableOnce
 
@@ -11,18 +13,16 @@ object CommandPrettyPrinter {
   def PrintCommands(cmd: Command, indentCount: Int): String = cmd match {
     case x: MaestroV2Command => PrintMaestroV2Commands(x, indentCount)
     case x: FMICommand => PrintFMICmd(x)
-    case x : ControlCommand => PrintControlCmd(x)
+    case x : ControlCommand => PrintControlCmd(x, indentCount)
+  }
+  def calcIndents(acc: String, rem: Int) : String = {
+    if (rem == 0)
+      acc
+    else
+      calcIndents(acc ++ "\t", rem-1)
   }
 
   def PrintMaestroV2Commands(cmd: MaestroV2Command, indentCount: Int): String = {
-
-    def calcIndents(acc: String, rem: Int) : String = {
-      if (rem == 0)
-        acc
-      else
-        calcIndents(acc ++ "\t", rem-1)
-    }
-
     val indents = calcIndents("", indentCount+1)
 
     cmd match {
@@ -34,15 +34,8 @@ object CommandPrettyPrinter {
         val x = commands.map(x => "\n" ++ indents ++ PrintCommands(x, indentCount+1))
         x.mkString(",")
       }
-      case SimulationPhase(command) => "Phase[%s]".format{
-        PrintMaestroV2Commands(command, indentCount+1)
-      }
     }
   }
-
-
-
-
 
 
   def PrintFMICmd(cmd: FMICommand): String = {
@@ -55,12 +48,27 @@ object CommandPrettyPrinter {
       case SetCMD(fmu, instance, scalarVariables) => "SetCMD(%s-(%s)-(%s))".format(fmu, instance, scalarVariables.mkString(","))
       case GetCMD(fmu, instance, scalarVariables) => "GetCMD(%s-(%s)-(%s))".format(fmu, instance, scalarVariables.mkString(","))
       case DoStepCMD(fmu, instance) => "DoStepCMD(%s-(%s))".format(fmu, instance)
+      case TerminateCMD(fmu, instance) => "TerminateCMD(%s-(%s))".format(fmu, instance)
+      case FreeInstanceCMD(fmu, instance) => "FreeInstanceCMD(%s-(%s))".format(fmu, instance)
     }
   }
 
-  def PrintControlCmd(cmd: ControlCommand): String = cmd match {case GoToPhase(phase) => "Go To Phase: " ++ printPhase(phase)}
-  def printPhase(phase: Phase): String = phase match {
-    case Simulation(data) => "Simulation"
+  def PrintKeywordCondition(keyword: Keyword): String = keyword match {
+    case org.intocps.maestrov2.program.controlCommands.Keyword.ENDTIME => "ENDTIME"
   }
+
+  def PrintConditionCmd(condition: Condition): String = {
+    condition match {
+      case KeywordCondition(keyword) => "KeywordCondition(%s)".format(PrintKeywordCondition(keyword))
+    }
+  }
+
+  def PrintControlCmd(cmd: ControlCommand, indentCount: Int): String = {
+    val indents = calcIndents("", indentCount+1)
+    cmd match {
+    case ExecuteTill(commands, condition) => "ExecuteTill[Till: %s,%s]".format(
+      "\n" ++ indents ++ PrintConditionCmd(condition),
+      "\n" ++ indents ++ PrintCommands(commands, indentCount+1))
+  }}
 
 }

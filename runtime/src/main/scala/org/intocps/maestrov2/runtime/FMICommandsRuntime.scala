@@ -7,10 +7,12 @@ object FMICommandsRuntime {
   def instantiate(command: InstantiateCMD, state: State) = {
     command match {
       case InstantiateCMD(fmu, instance) => {
-        for { fmuPath <- state.multiModelConfiguration.fmus.get(fmu) } fmuPath
-        org.intocps.fmi.jnifmuapi.Factory.create(state.multiModelConfiguration.fmus.get(fmu))
-        Left(new NotImplementedException)
+        for {
+          fmuPath <- state.multiModelConfiguration.fmus.get(fmu)
+        }
+          yield fmuPath
       }
+        Left(new NotImplementedException)
     }
 
   }

@@ -5,11 +5,11 @@ import java.io.File
 
 import org.intocps.fmi.IFmu
 import org.intocps.fmi.jnifmuapi.Factory
-import org.intocps.maestrov2.data.Control.Simulation
 import org.intocps.maestrov2.data._
 import org.intocps.maestrov2.program.commands._
+import org.intocps.maestrov2.program.controlCommands.{ExecuteTill, Keyword, KeywordCondition}
 import org.intocps.maestrov2.program.exceptions.{AlgebraicLoopException, ProgramComputationFailedException}
-import org.intocps.maestrov2.program.plugins.{IODependencyCalculator, InitialisationCommandsComputer, JacobianMA}
+import org.intocps.maestrov2.program.plugins.{IODependencyCalculator, InitialisationCommandsComputer, JacobianMA, Teardown}
 import org.intocps.orchestration.coe.modeldefinition.ModelDescription
 
 import scala.collection.immutable
@@ -57,11 +57,12 @@ object Program {
     val initializationScalarCommand: MaestroV2Command = InitialisationCommandsComputer.calcInitializationScalarCommand(connections, isSetView)
     val exitInitCommands: MaestroV2Command = CommandComputer.instanceCommandsMap(isInstanceCommandsView, (a : FMUWithMD, b: Set[String]) => ExitInitializationModeCMD(a.key, b))
 
-    val ma : Option[SimulationPhase] = JacobianMA.computeJacobianIteration2(isInstanceCommandsView, connections.filter(x => x.typeOf == ConnectionType.External)).map(x => SimulationPhase(x));
+    val ma = JacobianMA.computeJacobianIteration2(isInstanceCommandsView, connections.filter(x => x.typeOf == ConnectionType.External));
 
     val program: Option[MaestroV2Seq] = for {
       masterAlgorithm <- ma
-    } yield MaestroV2Seq(Seq(instantiate, setupExperiment, setIniCommands, enterInitCommands, initializationScalarCommand, exitInitCommands, GoToPhase(Simulation(None)), masterAlgorithm))
+      simulationLoop = ExecuteTill(masterAlgorithm, KeywordCondition(Keyword.ENDTIME))
+    } yield MaestroV2Seq(Seq(instantiate, setupExperiment, setIniCommands, enterInitCommands, initializationScalarCommand, exitInitCommands, simulationLoop, Teardown.computeTeardown(isInstanceCommandsView)))
 
     program match {
       case None => Left(exceptions.ProgramComputationFailedException("One or more program computation steps failed"))
