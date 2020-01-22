@@ -1,0 +1,68 @@
+Packages
+base org.maestro.ast.node;
+analysis org.maestro.ast.analysis;
+
+Tokens
+/* This section declared tokens as internal types or external classes
+ * internal definitions:
+ *  plus='+';
+ *
+ * external
+ *  location = 'java:org.overture.ast.lex.LexLocation';
+ */
+
+    identifier = 'java:java.lang.String';
+    java_Boolean = 'java:java.lang.Boolean';
+    java_Integer = 'java:java.lang.Integer';
+    java_String = 'java:java.lang.String';
+    java_Double = 'java:java.lang.Double';
+    java_Long = 'java:java.lang.Long';
+    fmi2 = 'FMI2';
+    fmi3 = 'FMI3';
+
+Abstract Syntax Tree
+/* This section declares the AST by giving root nodes and their possible sub classes
+ *
+ * exp {-> package='org.overture.ast.expressions'}
+ *      = {subclass1} [field_name]:field_type_must_either_be_root_or_token ...
+ *      ;
+ *
+ */
+
+definition {-> package='org.maestro.ast.definitions'}
+    =   {top} [a]:declaration
+    ;
+
+declaration {-> package='org.maestro.ast.declarations'}
+    = {import} [name]:identifier [functions]:type.function*;
+
+exp {-> package='org.maestro.ast.expression'}
+    =   {variable} [name]:identifier
+    |   {realLiteral} [value]:java_Double
+    |   {intLiteral} [value]:java_Integer
+    |   {stringLiteral} [value]:java_String
+    |   {booleanLiteral} [value]:java_Boolean
+    ;
+
+stm {-> package='org.maestro.ast.statements'}
+    =   {load} [uri]:exp.stringLiteral [importName]:identifier
+    |   {unload} [fmu]:identifier
+    |   {call} [functionName]:identifier [args]:exp*
+    |   {assignment} [target]:identifier [exp]:exp
+    |   {variableDeclaration} [name]:identifier [type]:type
+    ;
+
+type {-> package='org.maestro.ast.types'}
+    =   type.#basic
+    |   {name} [name]:identifier
+    |   {class} [name]:identifier [functions]:type.function*
+    |   {function} [name]:identifier (parameters):type* (result):type
+    |   {array} [size]:java_Integer [type]:type.#basic
+    ;
+
+#basic {-> package='org.maestro.ast.types'}
+    =   {boolean}
+    |   {real}
+    |   {string}
+    |   {int}
+    ;
