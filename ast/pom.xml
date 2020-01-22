@@ -10,7 +10,6 @@
     <properties>
         <astcreator.version>1.6.10</astcreator.version>
     </properties>
-    <groupId>org.intocps.maestro_v2</groupId>
     <artifactId>ast</artifactId>
     <name>The MaestroV2 Abstract Syntax Tree</name>
 
@@ -42,6 +41,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>add-source</id>
