@@ -38,14 +38,15 @@ exp {-> package='org.maestro.ast.expression'}
     |   {stringLiteral} [value]:java_String
     |   {identifier} [value]:java_String
     |   {booleanLiteral} [value]:java_Boolean
+    |   {load} [uri]:exp.stringLiteral [importName]:identifier
+    |   {apply} [root]:exp  [functionName]:identifier [args]:exp*
+    |   {seqComp} [members]:exp*
     ;
 
 stm {-> package='org.maestro.ast.statements'}
-    =   {load} [uri]:exp.stringLiteral [importName]:identifier
-    |   {unload} [fmu]:identifier
-    |   {call} [functionName]:identifier [args]:exp*
+    =   {unload} [fmu]:identifier
     |   {assignment} [target]:identifier [exp]:exp
-    |   {variableDeclaration} [name]:identifier [type]:type
+    |   {variableDeclaration} [type]:type [name]:identifier [initializer]:exp
     |   {import} [name]:identifier
     |   {while} [exp]:exp [statement]:block
     |   {if} [exp]:exp [thenStm]:block [elseStm]:block

@@ -3,15 +3,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.intocps.maestro_v2</groupId>
-        <artifactId>maestrov2</artifactId>
+        <groupId>org.intocps.maestro</groupId>
+        <artifactId>root</artifactId>
         <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <properties>
         <astcreator.version>1.6.10</astcreator.version>
     </properties>
     <artifactId>ast</artifactId>
-    <name>The MaestroV2 Abstract Syntax Tree</name>
+    <name>The Maestro Abstract Syntax Tree</name>
 
     <build>
         <plugins>
