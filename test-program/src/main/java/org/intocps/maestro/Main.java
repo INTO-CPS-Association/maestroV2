@@ -12,6 +12,7 @@ import org.maestro.ast.types.SBasicType;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Main {
     static Factory f = new Factory();
@@ -57,23 +58,30 @@ public class Main {
                         f.newBoolLiteral(true), f.newRealLiteral(0.0))));
 
 
-        list.getBody().add(setReal("s", ctrlDecl, ctrl, ints(1, 2), reals(1, 2)));
+        list.getBody().add(setReal("s", ctrlDecl, ctrl, ints(0, 1), reals(1, 2)));
+
 
         list.getBody().add(f.assignment("s", f.newApply(ctrlDecl, "enterInitializationMode", f.newVariableExp(ctrl))));
+        list.getBody().add(f.assignment("s", f.newApply(tankDecl, "enterInitializationMode", f.newVariableExp(tank))));
 
 
         final String level = "level";
         final String valve = "valve";
 
         list.getBody().add(f.newVariableDecl(level, f.newArrayType(1, f.newRealType()), null));
-        list.getBody().add(f.newVariableDecl(valve, f.newArrayType(1, f.newRealType()), null));
+        list.getBody().add(f.newVariableDecl(valve, f.newArrayType(1, f.newRealType()),
+                null));
 
-        list.getBody().add(getReal("s", tankDecl, tank, ints(1), f.newVariableExp(level)));
-        list.getBody().add(setReal("s", ctrlDecl, ctrl, ints(3), f.newVariableExp(level)));
-        list.getBody().add(getReal("s", ctrlDecl, ctrl, ints(4), f.newVariableExp(valve)));
-        list.getBody().add(getReal("s", tankDecl, tank, ints(2), f.newVariableExp(level)));
+        // crtl.valve->tank.valve
+        list.getBody().add(getReal("s", ctrlDecl, ctrl, ints(4), varExps(f.newVariableExp(valve))));
+        list.getBody().add(setReal("s", tankDecl, tank, ints(16), varExps(f.newVariableExp(valve))));
 
-        list.getBody().add(f.assignment(ctrl, f.newApply(tankDecl, "exitInitializationMode", f.newVariableExp(tank))));
+        // tank.level -> crtl.level
+        list.getBody().add(getReal("s", tankDecl, tank, ints(17), varExps(f.newVariableExp(level))));
+        list.getBody().add(setReal("s", ctrlDecl, ctrl, ints(3), varExps(f.newVariableExp(level))));
+
+        list.getBody().add(f.assignment(tank, f.newApply(tankDecl, "exitInitializationMode", f.newVariableExp(tank))));
+        list.getBody().add(f.assignment(ctrl, f.newApply(ctrlDecl, "exitInitializationMode", f.newVariableExp(ctrl))));
 
         String time = "time";
 
@@ -88,10 +96,10 @@ public class Main {
                 .add(f.assignment("s", f.newApply(tankDecl, "doStep", f.newVariableExp(time), f.newRealLiteral(0.001), f.newBoolLiteral(false))));
 
 
-        whileBody.getBody().add(getReal("s", tankDecl, tank, ints(1), f.newVariableExp(level)));
-        whileBody.getBody().add(setReal("s", ctrlDecl, ctrl, ints(3), f.newVariableExp(level)));
-        whileBody.getBody().add(getReal("s", ctrlDecl, ctrl, ints(4), f.newVariableExp(valve)));
-        whileBody.getBody().add(getReal("s", tankDecl, tank, ints(2), f.newVariableExp(level)));
+        whileBody.getBody().add(getReal("s", tankDecl, tank, ints(17), varExps(f.newVariableExp(level))));
+        whileBody.getBody().add(setReal("s", ctrlDecl, ctrl, ints(3), varExps(f.newVariableExp(level))));
+        whileBody.getBody().add(getReal("s", ctrlDecl, ctrl, ints(4), varExps(f.newVariableExp(valve))));
+        whileBody.getBody().add(setReal("s", tankDecl, tank, ints(16), varExps(f.newVariableExp(valve))));
 
         whileBody.getBody().add(f.assignment(time, f.newAddition(f.newVariableExp(time), f.newRealLiteral(0.001))));
 
@@ -111,8 +119,12 @@ public class Main {
         System.out.println(spec.apply(new SourceGenerator()));
     }
 
-    public static int[] ints(int... v) {
+    public static int[]     ints(int... v) {
         return v;
+    }
+
+    public static PExp varExps(PExp... var) {
+        return f.newSeqComp(Arrays.asList(var));
     }
 
     public static double[] reals(double... v) {
@@ -131,7 +143,7 @@ public class Main {
     }
 
     public static PStm getReal(String result, String decl, String comp, int[] vref, PExp values) {
-        return f.assignment(result, f.newApply(decl, "setReal", f.newVariableExp(comp),
+        return f.assignment(result, f.newApply(decl, "getReal", f.newVariableExp(comp),
                 f.newSeqComp(Arrays.stream(vref).mapToObj(v -> f.newIntLiteral(v)).collect(Collectors.toList())), values));
     }
 

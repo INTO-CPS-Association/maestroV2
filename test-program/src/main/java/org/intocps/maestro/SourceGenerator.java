@@ -11,8 +11,9 @@ import org.maestro.ast.types.ABooleanBasicType;
 import org.maestro.ast.types.AIntBasicType;
 import org.maestro.ast.types.ARealBasicType;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-
+import java.util.List;
 
 
 public class SourceGenerator extends AnswerAdaptor<String> {
@@ -125,6 +126,11 @@ public class SourceGenerator extends AnswerAdaptor<String> {
     }
 
     @Override
+    public String caseAIntLiteralExp(AIntLiteralExp node) throws AnalysisException {
+        return node.getValue() + "";
+    }
+
+    @Override
     public String caseARealLiteralExp(ARealLiteralExp node) throws AnalysisException {
         return node.getValue() + "";
     }
@@ -183,6 +189,8 @@ public class SourceGenerator extends AnswerAdaptor<String> {
         return res;
     }
 
+
+
     @Override
     public String caseAUnloadStm(AUnloadStm node) throws AnalysisException {
         return "//unlooad "+node.getFmu().apply(this);
@@ -193,5 +201,16 @@ public class SourceGenerator extends AnswerAdaptor<String> {
        return "auto "+node.getTarget().getValue().get(0).apply(this)+" = loadDll("+node.getUri().apply(this)+","+
         "&"+node.getTarget().getValue().get(1).apply(this)+
                 ")";
+    }
+
+    @Override
+    public String caseASeqCompExp(ASeqCompExp node) throws AnalysisException {
+        List<String> membersGenerated = new ArrayList<>();
+        for( PExp exp : node.getMembers()) {
+            membersGenerated.add(exp.apply(this));
+        }
+
+
+        return "{" + String.join(",", membersGenerated) + "}";
     }
 }
