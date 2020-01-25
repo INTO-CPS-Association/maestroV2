@@ -43,12 +43,15 @@ public class Main {
         final String tank = "tank";
         final String ctrl = "ctrl";
 
+
+
         list.getBody().add(f.assignment(ctrl,
                 f.newApply(ctrlDecl, "instantiate", f.newStringLiteral("controller"), f.newStringLiteral("uuid"), f.newStringLiteral("uri"),
                         f.newBoolLiteral(false), f.newBoolLiteral(true)))); list.getBody().add(f.assignment(tank,
                 f.newApply(ctrlDecl, "instantiate", f.newStringLiteral("tank"), f.newStringLiteral("uuid"), f.newStringLiteral("uri"),
                         f.newBoolLiteral(false), f.newBoolLiteral(true))));
 
+        // TODO: Missing to set parameters from tank: 0,1,2,3,4,5,6
 
         list.getBody().add(f.assignment("s",
                 f.newApply(ctrlDecl, "setupExperiment", f.newVariableExp(ctrl), f.newBoolLiteral(false), f.newRealLiteral(0.0), f.newRealLiteral(0.0),
