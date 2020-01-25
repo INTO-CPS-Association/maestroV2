@@ -28,7 +28,7 @@ Abstract Syntax Tree
 
 specification {-> package='org.maestro.ast.specification'}
     =   {language} [name]:identifier [functions]:type.function*
-    |   {simulation} [body]:stm*
+    |   {simulation} [body]:stm
     ;
 
 exp {-> package='org.maestro.ast.expression'}
@@ -37,19 +37,28 @@ exp {-> package='org.maestro.ast.expression'}
     |   {intLiteral} [value]:java_Integer
     |   {stringLiteral} [value]:java_String
     |   {identifier} [value]:java_String
+    |   {tupleIdentifier} [value]:identifier*
     |   {booleanLiteral} [value]:java_Boolean
-    |   {load} [uri]:exp.stringLiteral [importName]:identifier
     |   {apply} [root]:exp  [functionName]:identifier [args]:exp*
     |   {seqComp} [members]:exp*
+    |   #binary
+    ;
+
+#binary {-> package='org.maestro.ast.expression'
+    |  [left]:exp
+    |  [right]:exp }
+    =   {lessThan}
+    |   {addition}
     ;
 
 stm {-> package='org.maestro.ast.statements'}
-    =   {unload} [fmu]:identifier
+    =   {load} [uri]:exp.stringLiteral [importName]:identifier [target]:tupleIdentifier
+    |   {unload} [fmu]:identifier
     |   {assignment} [target]:identifier [exp]:exp
     |   {variableDeclaration} [type]:type [name]:identifier [initializer]:exp
     |   {import} [name]:identifier
-    |   {while} [exp]:exp [statement]:block
-    |   {if} [exp]:exp [thenStm]:block [elseStm]:block
+    |   {while} [condition]:exp [body]:stm
+    |   {if} [exp]:exp [thenStm]:stm [elseStm]:stm
     |   {block} [body]:stm*
     ;
 
