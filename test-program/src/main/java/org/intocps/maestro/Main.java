@@ -31,27 +31,31 @@ public class Main {
         list.getBody().add(f.newVariableDecl(ctrlDecl, f.newNamedType("fmi2"), null));
 
         list.getBody().add(new ALoadStm(f.newStringLiteral("controller.fmu"), f.newIdentifierExp("fmi2"),
-                new ATupleIdentifierExp(Arrays.asList(f.newIdentifierExp("errorCode"),f.newIdentifierExp(ctrlDecl)))));
+                new ATupleIdentifierExp(Arrays.asList(f.newIdentifierExp("errorCode"), f.newIdentifierExp(ctrlDecl)))));
 
         list.getBody().add(new ALoadStm(f.newStringLiteral("tank.fmu"), f.newIdentifierExp("fmi2"),
-                new ATupleIdentifierExp(Arrays.asList(f.newIdentifierExp("errorCode"),f.newIdentifierExp(tankDecl)))));
+                new ATupleIdentifierExp(Arrays.asList(f.newIdentifierExp("errorCode1"), f.newIdentifierExp(tankDecl)))));
 
-//        list.getBody().add(f.assignment("err", new ALoadExp(f.newStringLiteral("controller.fmu"), f.newIdentifierExp("fmi2"))));
-//        list.getBody().add(f.assignment("err", new ALoadExp(f.newStringLiteral("tank.fmu"), f.newIdentifierExp("fmi2"))));
+        //        list.getBody().add(f.assignment("err", new ALoadExp(f.newStringLiteral("controller.fmu"), f.newIdentifierExp("fmi2"))));
+        //        list.getBody().add(f.assignment("err", new ALoadExp(f.newStringLiteral("tank.fmu"), f.newIdentifierExp("fmi2"))));
 
         //TODO how do I know that I need to make these instances?
         final String tank = "tank";
         final String ctrl = "ctrl";
 
 
-
-        list.getBody().add(f.assignment(ctrl,
+        list.getBody().add(f.newVariableDecl(ctrl, f.newNamedType("auto"),
                 f.newApply(ctrlDecl, "instantiate", f.newStringLiteral("controller"), f.newStringLiteral("uuid"), f.newStringLiteral("uri"),
-                        f.newBoolLiteral(false), f.newBoolLiteral(true)))); list.getBody().add(f.assignment(tank,
+                        f.newBoolLiteral(false), f.newBoolLiteral(true))));
+
+
+        list.getBody().add(f.newVariableDecl(tank, f.newNamedType("auto"),
                 f.newApply(ctrlDecl, "instantiate", f.newStringLiteral("tank"), f.newStringLiteral("uuid"), f.newStringLiteral("uri"),
                         f.newBoolLiteral(false), f.newBoolLiteral(true))));
 
         // TODO: Missing to set parameters from tank: 0,1,2,3,4,5,6
+
+        list.getBody().add(f.newVariableDecl("s", f.newNamedType("fmi2Status"), null));
 
         list.getBody().add(f.assignment("s",
                 f.newApply(ctrlDecl, "setupExperiment", f.newVariableExp(ctrl), f.newBoolLiteral(false), f.newRealLiteral(0.0), f.newRealLiteral(0.0),
@@ -71,58 +75,61 @@ public class Main {
         final String level = "level";
         final String valve = "valve";
 
-        list.getBody().add(f.newVariableDecl(level, f.newArrayType(1, f.newRealType()), null));
-        list.getBody().add(f.newVariableDecl(valve, f.newArrayType(1, f.newRealType()),
-                null));
+        list.getBody().add(f.newVariableDecl(level, f.newArrayType(1, f.newRealType()), f.newSeqComp(f.newRealLiteral(0.0))));
+        list.getBody().add(f.newVariableDecl(valve, f.newArrayType(1, f.newRealType()), f.newSeqComp(f.newRealLiteral(0.0))));
 
         // crtl.valve->tank.valve
-        list.getBody().add(getReal("s", ctrlDecl, ctrl, ints(4), varExps(f.newVariableExp(valve))));
-        list.getBody().add(setReal("s", tankDecl, tank, ints(16), varExps(f.newVariableExp(valve))));
+        list.getBody().add(getReal("s", ctrlDecl, ctrl, ints(4), (f.newVariableExp(valve))));
+        list.getBody().add(setReal("s", tankDecl, tank, ints(16), (f.newVariableExp(valve))));
 
         // tank.level -> crtl.level
-        list.getBody().add(getReal("s", tankDecl, tank, ints(17), varExps(f.newVariableExp(level))));
-        list.getBody().add(setReal("s", ctrlDecl, ctrl, ints(3), varExps(f.newVariableExp(level))));
+        list.getBody().add(getReal("s", tankDecl, tank, ints(17), (f.newVariableExp(level))));
+        list.getBody().add(setReal("s", ctrlDecl, ctrl, ints(3), (f.newVariableExp(level))));
 
-        list.getBody().add(f.assignment(tank, f.newApply(tankDecl, "exitInitializationMode", f.newVariableExp(tank))));
-        list.getBody().add(f.assignment(ctrl, f.newApply(ctrlDecl, "exitInitializationMode", f.newVariableExp(ctrl))));
+        list.getBody().add(f.assignment("s", f.newApply(tankDecl, "exitInitializationMode", f.newVariableExp(tank))));
+        list.getBody().add(f.assignment("s", f.newApply(ctrlDecl, "exitInitializationMode", f.newVariableExp(ctrl))));
 
         String time = "time";
 
         list.getBody().add(f.newVariableDecl(time, f.newRealType(), f.newRealLiteral(0.0)));
 
         ABlockStm whileBody = f.newBlock();
-        list.getBody().add(f.newWhile(f.newLessThan(f.newVariableExp(tank), f.newRealLiteral(10.0)), whileBody));
+        list.getBody().add(f.newWhile(f.newLessThan(f.newVariableExp(time), f.newRealLiteral(10.0)), whileBody));
 
         whileBody.getBody()
-                .add(f.assignment("s", f.newApply(ctrlDecl, "doStep", f.newVariableExp(time), f.newRealLiteral(0.001), f.newBoolLiteral(false))));
+                .add(f.assignment("s", f.newApply(ctrlDecl, "doStep",f.newVariableExp(ctrl), f.newVariableExp(time), f.newRealLiteral(0.001),
+                        f.newBoolLiteral(false))));
         whileBody.getBody()
-                .add(f.assignment("s", f.newApply(tankDecl, "doStep", f.newVariableExp(time), f.newRealLiteral(0.001), f.newBoolLiteral(false))));
+                .add(f.assignment("s", f.newApply(tankDecl, "doStep", f.newVariableExp(tank),f.newVariableExp(time), f.newRealLiteral(0.001),
+                        f.newBoolLiteral(false))));
 
 
-        whileBody.getBody().add(getReal("s", tankDecl, tank, ints(17), varExps(f.newVariableExp(level))));
-        whileBody.getBody().add(setReal("s", ctrlDecl, ctrl, ints(3), varExps(f.newVariableExp(level))));
-        whileBody.getBody().add(getReal("s", ctrlDecl, ctrl, ints(4), varExps(f.newVariableExp(valve))));
-        whileBody.getBody().add(setReal("s", tankDecl, tank, ints(16), varExps(f.newVariableExp(valve))));
+        whileBody.getBody().add(getReal("s", tankDecl, tank, ints(17), (f.newVariableExp(level))));
+        whileBody.getBody().add(setReal("s", ctrlDecl, ctrl, ints(3), (f.newVariableExp(level))));
+        whileBody.getBody().add(getReal("s", ctrlDecl, ctrl, ints(4), (f.newVariableExp(valve))));
+        whileBody.getBody().add(setReal("s", tankDecl, tank, ints(16), f.newVariableExp(valve)));
 
         whileBody.getBody().add(f.assignment(time, f.newAddition(f.newVariableExp(time), f.newRealLiteral(0.001))));
 
 
         list.getBody().add(f.assignment("s", f.newApply(tankDecl, "terminate", f.newVariableExp(tank))));
-        list.getBody().add(f.assignment("s", f.newApply(tankDecl, "freeInstance", f.newVariableExp(tank))));
+        list.getBody().add( f.newCall(tankDecl, "freeInstance", f.newVariableExp(tank)));
         list.getBody().add(f.newUnload(tankDecl));
 
         list.getBody().add(f.assignment("s", f.newApply(ctrlDecl, "terminate", f.newVariableExp(ctrl))));
-        list.getBody().add(f.assignment("s", f.newApply(ctrlDecl, "freeInstance", f.newVariableExp(ctrl))));
+        list.getBody().add( f.newCall(ctrlDecl, "freeInstance", f.newVariableExp(ctrl)));
         list.getBody().add(f.newUnload(ctrlDecl));
 
 
         ASimulationSpecification spec = new ASimulationSpecification();
         spec.setBody(list);
 
+        spec.apply(new CppRewriter());
+
         System.out.println(spec.apply(new SourceGenerator()));
     }
 
-    public static int[]     ints(int... v) {
+    public static int[] ints(int... v) {
         return v;
     }
 
@@ -136,18 +143,20 @@ public class Main {
 
     public static PStm setReal(String result, String decl, String comp, int[] vref, double[] values) {
         return f.assignment(result, f.newApply(decl, "setReal", f.newVariableExp(comp),
-                f.newSeqComp(Arrays.stream(vref).mapToObj(v -> f.newIntLiteral(v)).collect(Collectors.toList())),
+                f.newSeqComp(Arrays.stream(vref).mapToObj(v -> f.newIntLiteral(v)).collect(Collectors.toList())), f.newIntLiteral(vref.length),
                 f.newSeqComp(Arrays.stream(values).mapToObj(v -> f.newRealLiteral(v)).collect(Collectors.toList()))));
     }
 
     public static PStm setReal(String result, String decl, String comp, int[] vref, PExp values) {
         return f.assignment(result, f.newApply(decl, "setReal", f.newVariableExp(comp),
-                f.newSeqComp(Arrays.stream(vref).mapToObj(v -> f.newIntLiteral(v)).collect(Collectors.toList())), values));
+                f.newSeqComp(Arrays.stream(vref).mapToObj(v -> f.newIntLiteral(v)).collect(Collectors.toList())), f.newIntLiteral(vref.length),
+                values));
     }
 
     public static PStm getReal(String result, String decl, String comp, int[] vref, PExp values) {
         return f.assignment(result, f.newApply(decl, "getReal", f.newVariableExp(comp),
-                f.newSeqComp(Arrays.stream(vref).mapToObj(v -> f.newIntLiteral(v)).collect(Collectors.toList())), values));
+                f.newSeqComp(Arrays.stream(vref).mapToObj(v -> f.newIntLiteral(v)).collect(Collectors.toList())), f.newIntLiteral(vref.length),
+                values));
     }
 
     @SuppressWarnings("all")
@@ -176,6 +185,14 @@ public class Main {
             return apply;
         }
 
+        public PStm newCall(String rootId, String functionId, PExp... args) {
+            ACallStm apply = new ACallStm();
+            apply.setRoot(newIdentifierExp(rootId));
+            apply.setFunctionName(newIdentifierExp(functionId));
+            apply.setArgs(Arrays.asList(args));
+            return apply;
+        }
+
         public PExp newBoolLiteral(boolean b) {
             return new ABooleanLiteralExp(b);
         }
@@ -190,6 +207,11 @@ public class Main {
             ARealLiteralExp l = new ARealLiteralExp();
             l.setValue(v);
             return l;
+        }
+
+        public PExp newSeqComp(PExp... members) {
+            return newSeqComp(Arrays.asList(members));
+
         }
 
         public PExp newSeqComp(List<? extends PExp> members) {
@@ -209,7 +231,7 @@ public class Main {
             return im;
         }
 
-        public PStm newVariableDecl(String name, PType type, PExp initializer) {
+        public AVariableDeclarationStm newVariableDecl(String name, PType type, PExp initializer) {
             AVariableDeclarationStm decl = new AVariableDeclarationStm();
             decl.setName(newIdentifierExp(name));
             decl.setType(type);
