@@ -31,11 +31,11 @@ public class Main {
         list.getBody().add(f.newVariableDecl(tankDecl, f.newNamedType("fmi2"), null));
         list.getBody().add(f.newVariableDecl(ctrlDecl, f.newNamedType("fmi2"), null));
 
-        list.getBody().add(new ALoadStm(f.newStringLiteral(new File("/src/main/resources/watertankcontroller-c/binaries/darwin64" +
+        list.getBody().add(new ALoadStm(f.newStringLiteral(new File("src/main/resources/watertankcontroller-c/binaries/darwin64" +
                 "/watertankcontroller-c.dylib").getAbsolutePath()), f.newIdentifierExp("fmi2"),
                 new ATupleIdentifierExp(Arrays.asList(f.newIdentifierExp("errorCode"), f.newIdentifierExp(ctrlDecl)))));
 
-        list.getBody().add(new ALoadStm(f.newStringLiteral(new File("/Users/kgl/data/au/into-cps-association/maestroV2/test-program/src/main" +
+        list.getBody().add(new ALoadStm(f.newStringLiteral(new File("src/main" +
                 "/resources" +
                 "/singlewatertank-20sim/binaries/darwin64/singlewatertank-20sim.dylib").getAbsolutePath()), f.newIdentifierExp("fmi2"),
                 new ATupleIdentifierExp(Arrays.asList(f.newIdentifierExp("errorCode1"), f.newIdentifierExp(tankDecl)))));
