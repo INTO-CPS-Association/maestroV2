@@ -13,6 +13,11 @@ import org.maestro.ast.types.AIntBasicType;
 import org.maestro.ast.types.*;
 import org.maestro.ast.types.PType;
 
+import java.util.Arrays;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public class CppRewriter extends DepthFirstAnalysisAdaptor {
 
     int namePostFix;
@@ -39,8 +44,9 @@ public class CppRewriter extends DepthFirstAnalysisAdaptor {
 
             SBasicType argType = getType(comp);
 
-            if(node.getFunctionName().getValue().equals("getReal")||node.getFunctionName().getValue().equals("setReal") && i==1)
-            {
+            String fname = node.getFunctionName().getValue();
+            if (Stream.of("Real", "Boolean", "Integer", "String").map(t -> Stream.of("get" + t, "set" + t)).flatMap(Function.identity())
+                    .collect(Collectors.toSet()).contains(fname) && i == 1) {
                 argType = new AUnsingedIntBasicType();
             }
 
@@ -53,7 +59,7 @@ public class CppRewriter extends DepthFirstAnalysisAdaptor {
             ABlockStm block = containingStm.getAncestor(ABlockStm.class);
 
             int index = block.getBody().indexOf(containingStm);
-            block.getBody().add(index,variable);
+            block.getBody().add(index, variable);
 
         }
 
@@ -73,7 +79,7 @@ public class CppRewriter extends DepthFirstAnalysisAdaptor {
 
             ABlockStm block = elem.getAncestor(ABlockStm.class);
 
-            while (block!=null){
+            while (block != null) {
 
                 for (PStm stm : block.getBody()) {
 
@@ -88,11 +94,12 @@ public class CppRewriter extends DepthFirstAnalysisAdaptor {
                     }
 
                 }
-                block  = block.parent().getAncestor(ABlockStm.class);
+                block = block.parent().getAncestor(ABlockStm.class);
 
 
             }
-        } return null;
+        }
+        return null;
     }
 
 

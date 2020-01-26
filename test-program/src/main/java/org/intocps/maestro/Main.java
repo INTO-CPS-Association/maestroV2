@@ -105,7 +105,7 @@ public class Main {
         list.getBody().add(setReal("s", tankDecl, tank, ints(0,1,2,3,4,5,6), reals(9.0,1.0,1.0,9.81,1.0,0.0,0.0)));
 
         // crtl.valve->tank.valve
-        list.getBody().add(getReal("s", ctrlDecl, ctrl, ints(4), (f.newVariableExp(valve))));
+        list.getBody().add(getBoolean("s", ctrlDecl, ctrl, ints(4), (f.newVariableExp(valve))));
         list.getBody().add(setReal("s", tankDecl, tank, ints(16), (f.newVariableExp(valve))));
 
         // tank.level -> crtl.level
@@ -132,7 +132,7 @@ public class Main {
 
         whileBody.getBody().add(getReal("s", tankDecl, tank, ints(17), (f.newVariableExp(level))));
         whileBody.getBody().add(setReal("s", ctrlDecl, ctrl, ints(3), (f.newVariableExp(level))));
-        whileBody.getBody().add(getReal("s", ctrlDecl, ctrl, ints(4), (f.newVariableExp(valve))));
+        whileBody.getBody().add(getBoolean("s", ctrlDecl, ctrl, ints(4), (f.newVariableExp(valve))));
         whileBody.getBody().add(setReal("s", tankDecl, tank, ints(16), f.newVariableExp(valve)));
 
         whileBody.getBody().add(f.assignment(time, f.newAddition(f.newVariableExp(time), f.newRealLiteral(0.001))));
@@ -181,6 +181,12 @@ public class Main {
 
     public static PStm getReal(String result, String decl, String comp, int[] vref, PExp values) {
         return f.assignment(result, f.newApply(decl, "getReal", f.newVariableExp(comp),
+                f.newSeqComp(Arrays.stream(vref).mapToObj(v -> f.newIntLiteral(v)).collect(Collectors.toList())), f.newIntLiteral(vref.length),
+                values));
+    }
+
+    public static PStm getBoolean(String result, String decl, String comp, int[] vref, PExp values) {
+        return f.assignment(result, f.newApply(decl, "getBoolean", f.newVariableExp(comp),
                 f.newSeqComp(Arrays.stream(vref).mapToObj(v -> f.newIntLiteral(v)).collect(Collectors.toList())), f.newIntLiteral(vref.length),
                 values));
     }
