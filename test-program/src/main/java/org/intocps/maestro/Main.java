@@ -149,9 +149,17 @@ public class Main {
 
         ASimulationSpecification spec = new ASimulationSpecification();
         spec.setBody(list);
+        System.out.println("\n#########################################################");
+        System.out.println("#                      SPEC                             #");
+        System.out.println("#-------------------------------------------------------#\n ");
+
+        System.out.println(spec.apply(new PrettyPrinter()));
 
         spec.apply(new CppRewriter());
 
+        System.out.println("\n#########################################################");
+        System.out.println("#                    C++ code                           #");
+        System.out.println("#-------------------------------------------------------#\n");
         System.out.println(spec.apply(new SourceGenerator()));
     }
 
@@ -260,6 +268,7 @@ public class Main {
         public PStm newImport(String name) {
             AImportStm im = new AImportStm();
             im.setName(newIdentifierExp(name));
+            im.setImportType(1);
             return im;
         }
 

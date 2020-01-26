@@ -17,6 +17,8 @@ Tokens
     java_Double = 'java:java.lang.Double';
     java_Long = 'java:java.lang.Long';
 
+
+
 Abstract Syntax Tree
 /* This section declares the AST by giving root nodes and their possible sub classes
  *
@@ -56,7 +58,7 @@ stm {-> package='org.maestro.ast.statements'}
     |   {unload} [fmu]:identifier
     |   {assignment} [target]:identifier [exp]:exp
     |   {variableDeclaration} [type]:type [name]:identifier [initializer]:exp
-    |   {import} [name]:identifier
+    |   {import} [importType]:java_Integer [name]:identifier
     |   {while} [condition]:exp [body]:stm
     |   {if} [exp]:exp [thenStm]:stm [elseStm]:stm
     |   {block} [body]:stm*
