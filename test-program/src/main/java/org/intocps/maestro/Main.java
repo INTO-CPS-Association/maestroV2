@@ -9,6 +9,7 @@ import org.maestro.ast.types.ARealBasicType;
 import org.maestro.ast.types.*;
 import org.maestro.ast.types.SBasicType;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,10 +31,13 @@ public class Main {
         list.getBody().add(f.newVariableDecl(tankDecl, f.newNamedType("fmi2"), null));
         list.getBody().add(f.newVariableDecl(ctrlDecl, f.newNamedType("fmi2"), null));
 
-        list.getBody().add(new ALoadStm(f.newStringLiteral("controller.fmu"), f.newIdentifierExp("fmi2"),
+        list.getBody().add(new ALoadStm(f.newStringLiteral(new File("/src/main/resources/watertankcontroller-c/binaries/darwin64" +
+                "/watertankcontroller-c.dylib").getAbsolutePath()), f.newIdentifierExp("fmi2"),
                 new ATupleIdentifierExp(Arrays.asList(f.newIdentifierExp("errorCode"), f.newIdentifierExp(ctrlDecl)))));
 
-        list.getBody().add(new ALoadStm(f.newStringLiteral("tank.fmu"), f.newIdentifierExp("fmi2"),
+        list.getBody().add(new ALoadStm(f.newStringLiteral(new File("/Users/kgl/data/au/into-cps-association/maestroV2/test-program/src/main" +
+                "/resources" +
+                "/singlewatertank-20sim/binaries/darwin64/singlewatertank-20sim.dylib").getAbsolutePath()), f.newIdentifierExp("fmi2"),
                 new ATupleIdentifierExp(Arrays.asList(f.newIdentifierExp("errorCode1"), f.newIdentifierExp(tankDecl)))));
 
         //        list.getBody().add(f.assignment("err", new ALoadExp(f.newStringLiteral("controller.fmu"), f.newIdentifierExp("fmi2"))));
@@ -43,33 +47,52 @@ public class Main {
         final String tank = "tank";
         final String ctrl = "ctrl";
 
-
+/*fmi2Component fmi2Instantiate(fmi2String instanceName,
+                                         fmi2Type fmuType, fmi2String fmuGUID,
+                                         fmi2String fmuResourceLocation,
+                                         const fmi2CallbackFunctions *functions,
+                                         fmi2Boolean visible,
+                                         fmi2Boolean loggingOn)*/
         list.getBody().add(f.newVariableDecl(ctrl, f.newNamedType("auto"),
-                f.newApply(ctrlDecl, "instantiate", f.newStringLiteral("controller"), f.newStringLiteral("uuid"), f.newStringLiteral("uri"),
+                f.newApply(ctrlDecl, "instantiate", f.newStringLiteral("controller"), f.newStringLiteral("{8c4e810f-3df3-4a00-8276-176fa3c9f000}"), f.newStringLiteral("uri"),
                         f.newBoolLiteral(false), f.newBoolLiteral(true))));
 
 
         list.getBody().add(f.newVariableDecl(tank, f.newNamedType("auto"),
-                f.newApply(ctrlDecl, "instantiate", f.newStringLiteral("tank"), f.newStringLiteral("uuid"), f.newStringLiteral("uri"),
+                f.newApply(tankDecl, "instantiate", f.newStringLiteral("tank"), f.newStringLiteral("{cfc65592-9ece-4563-9705-1581b6e7071c}"),
+                        f.newStringLiteral("uri"),
                         f.newBoolLiteral(false), f.newBoolLiteral(true))));
 
         // TODO: Missing to set parameters from tank: 0,1,2,3,4,5,6
 
         list.getBody().add(f.newVariableDecl("s", f.newNamedType("fmi2Status"), null));
 
+        //fmi2Status fmi2SetupExperiment(
+        //        fmi2Component c, fmi2Boolean toleranceDefined, fmi2Real tolerance,
+        //        fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime)
         list.getBody().add(f.assignment("s",
                 f.newApply(ctrlDecl, "setupExperiment", f.newVariableExp(ctrl), f.newBoolLiteral(false), f.newRealLiteral(0.0), f.newRealLiteral(0.0),
-                        f.newBoolLiteral(true), f.newRealLiteral(0.0))));
+                        f.newBoolLiteral(true), f.newRealLiteral(10.0))));
         list.getBody().add(f.assignment("s",
                 f.newApply(tankDecl, "setupExperiment", f.newVariableExp(tank), f.newBoolLiteral(false), f.newRealLiteral(0.0), f.newRealLiteral(0.0),
-                        f.newBoolLiteral(true), f.newRealLiteral(0.0))));
+                        f.newBoolLiteral(true), f.newRealLiteral(10.0))));
 
 
-        list.getBody().add(setReal("s", ctrlDecl, ctrl, ints(0, 1), reals(1, 2)));
+//        list.getBody().add(setReal("s", ctrlDecl, ctrl, ints(0, 1), reals(1, 2)));
 
 
         list.getBody().add(f.assignment("s", f.newApply(ctrlDecl, "enterInitializationMode", f.newVariableExp(ctrl))));
         list.getBody().add(f.assignment("s", f.newApply(tankDecl, "enterInitializationMode", f.newVariableExp(tank))));
+
+        /*Set[
+			SetCMD(tank-(t)-(0,5,1,6,2,3,4)),
+			SetCMD(control-(c)-(0,1))],
+		Seq[
+			GetCMD(control-(c)-(4)),
+			SetCMD(tank-(t)-(16)),
+			GetCMD(tank-(t)-(17)),
+			SetCMD(control-(c)-(3))]],
+	Set[*/
 
 
         final String level = "level";
@@ -77,6 +100,9 @@ public class Main {
 
         list.getBody().add(f.newVariableDecl(level, f.newArrayType(1, f.newRealType()), f.newSeqComp(f.newRealLiteral(0.0))));
         list.getBody().add(f.newVariableDecl(valve, f.newArrayType(1, f.newRealType()), f.newSeqComp(f.newRealLiteral(0.0))));
+
+        list.getBody().add(setReal("s", ctrlDecl, ctrl, ints(0,1), reals(2.0,1.0)));
+        list.getBody().add(setReal("s", tankDecl, tank, ints(0,1,2,3,4,5,6), reals(9.0,1.0,1.0,9.81,1.0,0.0,0.0)));
 
         // crtl.valve->tank.valve
         list.getBody().add(getReal("s", ctrlDecl, ctrl, ints(4), (f.newVariableExp(valve))));
