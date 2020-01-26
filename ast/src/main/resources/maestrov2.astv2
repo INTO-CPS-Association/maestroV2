@@ -60,6 +60,7 @@ stm {-> package='org.maestro.ast.statements'}
     |   {while} [condition]:exp [body]:stm
     |   {if} [exp]:exp [thenStm]:stm [elseStm]:stm
     |   {block} [body]:stm*
+    |   {call} [root]:exp  [functionName]:identifier [args]:exp*
     ;
 
 type {-> package='org.maestro.ast.types'}
@@ -75,4 +76,5 @@ type {-> package='org.maestro.ast.types'}
     |   {real}
     |   {string}
     |   {int}
+    |   {unsingedInt}
     ;

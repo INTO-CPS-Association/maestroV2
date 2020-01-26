@@ -4,6 +4,7 @@ import org.maestro.ast.analysis.AnalysisException;
 import org.maestro.ast.analysis.AnswerAdaptor;
 import org.maestro.ast.expression.*;
 import org.maestro.ast.node.INode;
+import org.maestro.ast.node.NodeList;
 import org.maestro.ast.specification.ASimulationSpecification;
 import org.maestro.ast.statements.*;
 import org.maestro.ast.types.*;
@@ -34,53 +35,46 @@ public class SourceGenerator extends AnswerAdaptor<String> {
 
     @Override
     public String caseAWhileStm(AWhileStm node) throws AnalysisException {
-        return String.format("white(%s)\n%s", node.getCondition().apply(this), node.getBody().apply(this));
+        return String.format("while(%s)\n%s", node.getCondition().apply(this), node.getBody().apply(this));
     }
 
     @Override
     public String caseASimulationSpecification(ASimulationSpecification node) throws AnalysisException {
 
-        return node.getBody().apply(this);
+        String funnctions = " fmi2CallbackFunctions callback = {.logger = &fmuLogger, .allocateMemory = NULL, .freeMemory = NULL, " + ".stepFinished = " + "NULL, .componentEnvironment = NULL};\n";
+
+        return funnctions + node.getBody().apply(this);
 
     }
 
-
+    @Override
+    public String caseACallStm(ACallStm node) throws AnalysisException {
+        return caseAApplyExp(node.getRoot(),node.getFunctionName(),node.getArgs());
+    }
 
     @Override
     public String caseAApplyExp(AApplyExp node) throws AnalysisException {
 
-        if (node.getFunctionName().getValue().equals("instantiate")) {
-            String name = node.getArgs().get(0).apply(this);
-            String uuid = node.getArgs().get(1).apply(this);
-            String uri = node.getArgs().get(2).apply(this);
-            String visible = node.getArgs().get(3).apply(this);
-            String logginOn = node.getArgs().get(4).apply(this);
+       return caseAApplyExp(node.getRoot(),node.getFunctionName(),node.getArgs());
 
-            //            String functionsCbName = name.replaceAll("[^a-zA-Z0-9]", "")+"func";
-            //            String funnctions = " fmi2CallbackFunctions "+functionsCbName+" = {.logger = &fmuLogger, .allocateMemory = NULL, .freeMemory = NULL, " +
-            //                    ".stepFinished = " +
-            //                    "NULL, .componentEnvironment = NULL};";
+    }
 
-            return String.format("%s->instantiate(%s,fmi2CoSimulation,%s,%s,&%s,%s,%s)",node.getRoot().apply(this), name, uuid, uri, "callback",
-                    visible,
-                    logginOn);
+    public String caseAApplyExp(PExp root, AIdentifierExp functionName, List<PExp> args) throws AnalysisException {
+
+        if (functionName.getValue().equals("instantiate")) {
+            String name = args.get(0).apply(this);
+            String uuid = args.get(1).apply(this);
+            String uri = args.get(2).apply(this);
+            String visible = args.get(3).apply(this);
+            String logginOn = args.get(4).apply(this);
+
+            return String
+                    .format("%s.instantiate(%s,fmi2CoSimulation,%s,%s,&%s,%s,%s)", root.apply(this), name, uuid, uri, "callback", visible,
+                            logginOn);
         }
 
-            /*
-    auto comp = fmu.instantiate("name", fmi2CoSimulation, "jkkk",
-                                "file:/Users/kgl/data/au/into-cps-association/rabbitmq-fmu/fmu-loader/tmp/resources", &cbFuncs, true,
-                                true);
-
-    fmu.enterInitializationMode(comp);
-
-
-    fmi2ValueReference refs[1]={};
-    fmi2Real reals[1];
-    fmu.setReal(comp,refs,1,reals);*/
-
-
-        String ret = node.getRoot().apply(this) + "." + node.getFunctionName().apply(this) + "(";
-        Iterator<PExp> itr = node.getArgs().iterator();
+        String ret = root.apply(this) + "." + functionName.apply(this) + "(";
+        Iterator<PExp> itr = args.iterator();
         while (itr.hasNext()) {
             ret += itr.next().apply(this);
             if (itr.hasNext()) {
@@ -89,6 +83,11 @@ public class SourceGenerator extends AnswerAdaptor<String> {
         }
         return ret + ")";
 
+    }
+
+    @Override
+    public String caseAUnsingedIntBasicType(AUnsingedIntBasicType node) throws AnalysisException {
+        return "unsigned int";
     }
 
     @Override
@@ -163,25 +162,35 @@ public class SourceGenerator extends AnswerAdaptor<String> {
         Iterator<PStm> itr = node.getBody().iterator();
         while (itr.hasNext()) {
             ret += itr.next().apply(this);
-                ret += ";\n";
+            ret += ";\n";
         }
         return ret + "}";
     }
 
     @Override
     public String caseANameType(ANameType node) throws AnalysisException {
-        String name =  node.getName().apply(this);
+        String name = node.getName().apply(this);
 
-        if(name.equals("fmi2"))
+        if (name.equals("fmi2")) {
             return "FMU";
-        else
+        } else {
             return name;
+        }
     }
 
     @Override
     public String caseAVariableDeclarationStm(AVariableDeclarationStm node) throws AnalysisException {
-        String res = node.getType().apply(this) + " " + node.getName().apply(this);
 
+        String res = "";
+        if (node.getType() instanceof AArrayType) {
+            AArrayType aType = (AArrayType) node.getType();
+            res = aType.getType().apply(this) + " " + node.getName().apply(this) + "[" + aType.getSize() + "]";
+        } else {
+
+
+            res = node.getType().apply(this) + " " + node.getName().apply(this);
+
+        }
         if (node.getInitializer() != null) {
             res += (" = " + node.getInitializer().apply(this));
         }
@@ -190,23 +199,21 @@ public class SourceGenerator extends AnswerAdaptor<String> {
     }
 
 
-
     @Override
     public String caseAUnloadStm(AUnloadStm node) throws AnalysisException {
-        return "//unlooad "+node.getFmu().apply(this);
+        return "//unlooad " + node.getFmu().apply(this);
     }
 
     @Override
     public String caseALoadStm(ALoadStm node) throws AnalysisException {
-       return "auto "+node.getTarget().getValue().get(0).apply(this)+" = loadDll("+node.getUri().apply(this)+","+
-        "&"+node.getTarget().getValue().get(1).apply(this)+
-                ")";
+        return "auto " + node.getTarget().getValue().get(0).apply(this) + " = loadDll(" + node.getUri().apply(this) + "," + "&" + node.getTarget()
+                .getValue().get(1).apply(this) + ")";
     }
 
     @Override
     public String caseASeqCompExp(ASeqCompExp node) throws AnalysisException {
         List<String> membersGenerated = new ArrayList<>();
-        for( PExp exp : node.getMembers()) {
+        for (PExp exp : node.getMembers()) {
             membersGenerated.add(exp.apply(this));
         }
 
