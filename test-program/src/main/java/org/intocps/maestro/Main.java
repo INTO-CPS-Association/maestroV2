@@ -61,7 +61,7 @@ public class Main {
                         f.newBoolLiteral(true), f.newRealLiteral(0.0))));
 
 
-        list.getBody().add(setReal("s", ctrlDecl, ctrl, ints(0, 1), reals(1, 2)));
+        list.getBody().add(setReal("s", ctrlDecl, ctrl, ints(0, 1), reals(2, 1)));
 
 
         list.getBody().add(f.assignment("s", f.newApply(ctrlDecl, "enterInitializationMode", f.newVariableExp(ctrl))));
