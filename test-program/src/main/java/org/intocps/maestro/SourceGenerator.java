@@ -30,7 +30,18 @@ public class SourceGenerator extends AnswerAdaptor<String> {
 
     @Override
     public String defaultSBinaryExp(SBinaryExp node) throws AnalysisException {
-        return node.getLeft().apply(this) + " + " + node.getRight().apply(this);
+
+        String op ="?";
+
+        if(node instanceof AAdditionBinaryExp)
+        {
+            op = "+";
+        }else if(node instanceof ALessThanBinaryExp)
+        {
+            op = "<";
+        }
+
+        return node.getLeft().apply(this) + " "+op+" " + node.getRight().apply(this);
     }
 
     @Override
