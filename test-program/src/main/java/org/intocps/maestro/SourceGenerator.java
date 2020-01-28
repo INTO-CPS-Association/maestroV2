@@ -30,7 +30,18 @@ public class SourceGenerator extends AnswerAdaptor<String> {
 
     @Override
     public String defaultSBinaryExp(SBinaryExp node) throws AnalysisException {
-        return node.getLeft().apply(this) + " + " + node.getRight().apply(this);
+
+        String op ="?";
+
+        if(node instanceof AAdditionBinaryExp)
+        {
+            op = "+";
+        }else if(node instanceof ALessThanBinaryExp)
+        {
+            op = "<";
+        }
+
+        return node.getLeft().apply(this) + " "+op+" " + node.getRight().apply(this);
     }
 
     @Override
@@ -41,7 +52,7 @@ public class SourceGenerator extends AnswerAdaptor<String> {
     @Override
     public String caseASimulationSpecification(ASimulationSpecification node) throws AnalysisException {
 
-        String funnctions = " fmi2CallbackFunctions callback = {.logger = &fmuLogger, .allocateMemory = NULL, .freeMemory = NULL, " + ".stepFinished = " + "NULL, .componentEnvironment = NULL};\n";
+        String funnctions = " fmi2CallbackFunctions callback = {.logger = &fmuLogger, .allocateMemory = calloc, .freeMemory = free, " + ".stepFinished = " + "NULL, .componentEnvironment = NULL};\n";
 
         return funnctions + node.getBody().apply(this);
 
